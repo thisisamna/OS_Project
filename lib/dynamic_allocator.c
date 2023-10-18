@@ -100,17 +100,12 @@ void initialize_dynamic_allocator(uint32 daStart, uint32 initSizeOfAllocatedSpac
 	struct MemBlock_LIST block_list;
 	LIST_INIT(&block_list);
 
-	block_list.lh_first = (void*) daStart;
 
-	block_list.lh_last = (void*) initSizeOfAllocatedSpace;
-	block_list.size = initSizeOfAllocatedSpace;
+	struct BlockMetaData* block = (struct BlockMetaData *) daStart;
+	block->size= initSizeOfAllocatedSpace;;
+	block->is_free=1;
 
-
-	struct BlockMetaData block;
-	block.size= initSizeOfAllocatedSpace;;
-	block.is_free=1;
-	LIST_INSERT_HEAD(&block_list, &block);
-	print_blocks_list(block_list);
+	LIST_INSERT_HEAD(&block_list, block);
 
 }
 
