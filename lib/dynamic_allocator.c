@@ -99,13 +99,18 @@ void initialize_dynamic_allocator(uint32 daStart, uint32 initSizeOfAllocatedSpac
 	LIST_ENTRY(BlockMetaData) prev_next_info;
 	struct MemBlock_LIST block_list;
 	LIST_INIT(&block_list);
-	do {
-		(((&block_list))->lh_first) = ((void*) daStart);
 
-		(((&block_list))->lh_last) = ((void*) initSizeOfAllocatedSpace);
-		((&block_list)->size) = initSizeOfAllocatedSpace;
-	} while (0);
+	block_list.lh_first = (void*) daStart;
 
+	block_list.lh_last = (void*) initSizeOfAllocatedSpace;
+	block_list.size = initSizeOfAllocatedSpace;
+
+
+	struct BlockMetaData block;
+	block.size= initSizeOfAllocatedSpace;;
+	block.is_free=1;
+	LIST_INSERT_HEAD(&block_list, &block);
+	print_blocks_list(block_list);
 
 }
 

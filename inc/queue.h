@@ -236,9 +236,14 @@ struct {								\
 /*
  * Insert the element "elm" at the head of the list named "head".
  * The "prev_next_info" name is the link element as above.
+
+ //below: if (elm == NULL) panic("LIST_INSERT_HEAD: element is NULL!");			\
+
  */
+
+
+
 #define	LIST_INSERT_HEAD(list, elm) do {				\
-	if (elm == NULL) panic("LIST_INSERT_HEAD: element is NULL!");			\
 	if ((LIST_NEXT((elm)) = LIST_FIRST((list))) != NULL)	\
 		LIST_PREV(LIST_FIRST((list)))= ((elm));\
 	else	\
