@@ -95,7 +95,18 @@ void initialize_dynamic_allocator(uint32 daStart, uint32 initSizeOfAllocatedSpac
 	//=========================================
 
 	//TODO: [PROJECT'23.MS1 - #5] [3] DYNAMIC ALLOCATOR - initialize_dynamic_allocator()
-	panic("initialize_dynamic_allocator is not implemented yet");
+	LIST_HEAD(MemBlock_LIST,BlockMetaData);
+	LIST_ENTRY(BlockMetaData) prev_next_info;
+	struct MemBlock_LIST block_list;
+	LIST_INIT(&block_list);
+	do {
+		(((&block_list))->lh_first) = ((void*) daStart);
+
+		(((&block_list))->lh_last) = ((void*) initSizeOfAllocatedSpace);
+		((&block_list)->size) = initSizeOfAllocatedSpace;
+	} while (0);
+
+
 }
 
 //=========================================
