@@ -95,11 +95,7 @@ void initialize_dynamic_allocator(uint32 daStart, uint32 initSizeOfAllocatedSpac
 	//=========================================
 
 	//TODO: [PROJECT'23.MS1 - #5] [3] DYNAMIC ALLOCATOR - initialize_dynamic_allocator()
-	LIST_HEAD(MemBlock_LIST,BlockMetaData);
-	LIST_ENTRY(BlockMetaData) prev_next_info;
-	struct MemBlock_LIST block_list;
 	LIST_INIT(&block_list);
-
 
 	struct BlockMetaData* block = (struct BlockMetaData *) daStart;
 	block->size= initSizeOfAllocatedSpace;;
@@ -115,8 +111,46 @@ void initialize_dynamic_allocator(uint32 daStart, uint32 initSizeOfAllocatedSpac
 void *alloc_block_FF(uint32 size)
 {
 	//TODO: [PROJECT'23.MS1 - #6] [3] DYNAMIC ALLOCATOR - alloc_block_FF()
-	panic("alloc_block_FF is not implemented yet");
-	return NULL;
+	//panic("alloc_block_FF is not implemented yet");
+	if(size==0)
+		return NULL;
+	struct BlockMetaData* block;
+	size += sizeOfMetaData();
+	LIST_FOREACH(block, &block_list)
+	{
+		if(block->is_free)
+		{
+			if(size > block->size)
+			{
+				continue;
+			}
+			else if(size < block->size)
+			{
+				block->is_free=0;
+				uint32 free_block_size=block->size-size;
+				block->size=size;
+				struct BlockMetaData* free_block = (struct BlockMetaData*) &block[ (uint32)block->size-1];
+				free_block->size= free_block_size;
+				free_block->is_free=1;
+				LIST_INSERT_AFTER(&block_list, block, free_block);
+				return ((block)+sizeOfMetaData());
+			}
+
+			else if(size == get_block_size(block))
+				{
+					block->is_free=0;
+					return ((block)+sizeOfMetaData());
+
+				}
+
+		}
+
+	}
+	if(sbrk(size)==0)
+		//FIX THIS AMNA
+		return NULL;
+	else
+		return NULL;
 }
 //=========================================
 // [5] ALLOCATE BLOCK BY BEST FIT:
@@ -162,5 +196,58 @@ void *realloc_block_FF(void* va, uint32 new_size)
 {
 	//TODO: [PROJECT'23.MS1 - #8] [3] DYNAMIC ALLOCATOR - realloc_block_FF()
 	panic("realloc_block_FF is not implemented yet");
-	return NULL;
+
+/*
+//the current block meta data size
+uint32 original_size = get_block_size(va);
+
+
+// handle the case where size is less than the original size.
+//then if the size is larger than the original size
+if (new_size <= original_size) {
+original_size = new_size;
+   return 0;
 }
+else if(new_size > original_size) {
+
+
+struct BlockMetaData *nextBlkMetaData = LIST_NEXT(curBlkMetaData);
+uint32 next_size = 0;
+if (nextBlkMetaData != NULL) {
+   next_size = nextBlkMetaData->size;
+}
+
+else if (nextBlkMetaData != NULL &&  free_block(va) && (original_size + next_size >= new_size)) {
+get_block_size(va) = new_size;
+   nextBlkMetaData->size -= (new_size - original_size);
+   return 0;
+
+
+}
+
+}
+
+
+
+//handling the special cases
+if (va == NULL) {
+      if (new_size == 0) {
+          return NULL;  //alloc_FF(0) in case of realloc_block_FF(null,0)
+      }
+      else {
+          return alloc_FF(new_size);  //alloc_FF(n) in case of realloc_block_FF(null,new_size)
+      }
+ }
+else if (new_size == 0) {
+      free_block(va);  // to free(va) in case of realloc_block_FF(va,0)
+      return NULL;
+  }
+
+
+
+
+panic("realloc_block_FF is not implemented yet");
+return NULL;
+*/
+}
+
