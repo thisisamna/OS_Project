@@ -129,27 +129,30 @@ void *alloc_block_FF(uint32 size)
 				block->is_free=0;
 				uint32 free_block_size=block->size-size;
 				block->size=size;
-				struct BlockMetaData* free_block = (struct BlockMetaData*) &block[ (uint32)block->size-1];
-				free_block->size= free_block_size;
-				free_block->is_free=1;
-				LIST_INSERT_AFTER(&block_list, block, free_block);
-				return ((block)+sizeOfMetaData());
+				if(free_block_size>=sizeOfMetaData())
+				{
+				struct BlockMetaData* free_block = (struct BlockMetaData*) &block[(uint32)block->size];
+					free_block->size= free_block_size;
+					free_block->is_free=1;
+					LIST_INSERT_AFTER(&block_list, block, free_block);
+				}
+				return ++block;
 			}
 
-			else if(size == get_block_size(block))
+			else if(size == block->size)
 				{
 					block->is_free=0;
-					return ((block)+sizeOfMetaData());
+					return ++block;
 
 				}
 
 		}
 
 	}
-	if(sbrk(size)==0)
-		//FIX THIS AMNA
+	if(sbrk(size)==(void*)-1)
 		return NULL;
 	else
+		//returns old sbreak, go from here
 		return NULL;
 }
 //=========================================
