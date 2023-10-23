@@ -108,54 +108,62 @@ void initialize_dynamic_allocator(uint32 daStart, uint32 initSizeOfAllocatedSpac
 //=========================================
 // [4] ALLOCATE BLOCK BY FIRST FIT:
 //=========================================
+//=========================================
+// [4] ALLOCATE BLOCK BY FIRST FIT:
+//=========================================
 void *alloc_block_FF(uint32 size)
 {
-	//TODO: [PROJECT'23.MS1 - #6] [3] DYNAMIC ALLOCATOR - alloc_block_FF()
-	//panic("alloc_block_FF is not implemented yet");
-	if(size==0)
-		return NULL;
-	struct BlockMetaData* block;
-	size += sizeOfMetaData();
-	LIST_FOREACH(block, &block_list)
-	{
-		if(block->is_free)
-		{
-			if(size > block->size)
-			{
-				continue;
-			}
-			else if(size < block->size)
-			{
-				block->is_free=0;
-				uint32 free_block_size=block->size-size;
-				block->size=size;
-				if(free_block_size>=sizeOfMetaData())
-				{
-				struct BlockMetaData* free_block = (struct BlockMetaData*) &block[(uint32)block->size];
-					free_block->size= free_block_size;
-					free_block->is_free=1;
-					LIST_INSERT_AFTER(&block_list, block, free_block);
-				}
-				return ++block;
-			}
+    //TODO: [PROJECT'23.MS1 - #6] [3] DYNAMIC ALLOCATOR - alloc_block_FF()
+    //panic("alloc_block_FF is not implemented yet");
+    if(size==0)
+        return NULL;
+    struct BlockMetaData* block;
+    size += sizeOfMetaData();
+    LIST_FOREACH(block, &block_list)
+    {
+        if(block->is_free)
+        {
+            if(size > block->size)
+            {
+                continue;
+            }
+            else if(size < block->size)
+            {
+                block->is_free=0;
+                uint32 free_block_size=block->size-size;
+                block->size=size;
+                if(free_block_size>=sizeOfMetaData())
+                {
+                struct BlockMetaData* free_block = (struct BlockMetaData*) &block[(uint32)block->size];
+                    free_block->size= free_block_size;
+                    free_block->is_free=1;
+                    LIST_INSERT_AFTER(&block_list, block, free_block);
+                }
+                return &(block[sizeOfMetaData()-16]);
+            }
 
-			else if(size == block->size)
-				{
-					block->is_free=0;
-					return ++block;
+            else if(size == block->size)
+                {
+                    block->is_free=0;
+                    return &(block[sizeOfMetaData()-16]);
 
-				}
+                }
 
-		}
+        }
 
-	}
-	if(sbrk(size)==(void*)-1)
-		return NULL;
-	else
-		//returns old sbreak, go from here
-		return NULL;
-}
-//=========================================
+    }
+    struct BlockMetaData* old_sbrk=sbrk(size);
+    if(old_sbrk==(void*)-1)
+        return NULL;
+    else
+    {
+        //returns old sbreak, go from here
+        old_sbrk->size= size;
+        old_sbrk->is_free=1;
+        LIST_INSERT_AFTER(&block_list, block, old_sbrk);
+        return &(old_sbrk[sizeOfMetaData()-1]);
+    }
+}//=========================================
 // [5] ALLOCATE BLOCK BY BEST FIT:
 //=========================================
 void *alloc_block_BF(uint32 size)
