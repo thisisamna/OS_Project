@@ -524,8 +524,7 @@ uint32 syscall(uint32 syscallno, uint32 a1, uint32 a2, uint32 a3, uint32 a4, uin
 	case SYS_sbrk:
 	   // if (a1 != NULL && !(a1>USER_LIMIT))
 	  //  {
-	        sys_sbrk((int)a1);
-	        return 0;
+	        return (uint32)sys_sbrk(a1);
 	   // }
 	   // else
 	    	//sched_kill_env(curenv->env_id);
