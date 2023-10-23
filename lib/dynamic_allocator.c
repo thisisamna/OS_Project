@@ -205,62 +205,56 @@ void free_block(void *va)
 //=========================================
 // [4] REALLOCATE BLOCK BY FIRST FIT:
 //=========================================
+
 void *realloc_block_FF(void* va, uint32 new_size)
 {
-	//TODO: [PROJECT'23.MS1 - #8] [3] DYNAMIC ALLOCATOR - realloc_block_FF()
-	panic("realloc_block_FF is not implemented yet");
+    //TODO: [PROJECT'23.MS1 - #8] [3] DYNAMIC ALLOCATOR - realloc_block_FF()
 
-/*
-//the current block meta data size
-uint32 original_size = get_block_size(va);
+    uint32 original_size = get_block_size(va);
+
+    //(1)handling the special cases
+    if (va == NULL)
+    {
+	     if (new_size == 0)
+	      	return alloc_block_FF(0);  //alloc_FF(0) in case of realloc_block_FF(null,0)             
+	     else
+		  	return alloc_block_FF(new_size);  //alloc_FF(n) in case of realloc_block_FF(null,new_size)
+
+     }
+    else if (new_size == 0)
+    {
+        free_block(va);  // to free(va) in case of realloc_block_FF(va,0)
+        return NULL;
+    }
 
 
-// handle the case where size is less than the original size.
-//then if the size is larger than the original size
-if (new_size <= original_size) {
-original_size = new_size;
-   return 0;
+
+	// Get the current block's metadata
+
+	struct BlockMetaData *curBlkMetaData = ((struct BlockMetaData *)va - 1);
+
+	//(2) Check if the new size is smaller than the current size
+
+	if (new_size <= get_block_size(curBlkMetaData))
+	{
+		// Update the block's size
+	   curBlkMetaData->size = new_size;
+	   return va;
+	   break;
+	}
+
+	// Calculate the required additional size
+
+	uint32 additional_size = new_size - curBlkMetaData->size;
+
+	//(3)Check if there's sufficient free block in front of the current block
+
+	struct BlockMetaData *nextBlkMetaData = LIST_NEXT(curBlkMetaData);
+	if (nextBlkMetaData != NULL && nextBlkMetaData->is_free && get_block_size(nextBlkMetaData) >= additional_size)
+	{
+		// Resize the current block
+		curBlkMetaData->size = new_size;
+		nextBlkMetaData->is_free = 0;
+		return va;
+	}
 }
-else if(new_size > original_size) {
-
-
-struct BlockMetaData *nextBlkMetaData = LIST_NEXT(curBlkMetaData);
-uint32 next_size = 0;
-if (nextBlkMetaData != NULL) {
-   next_size = nextBlkMetaData->size;
-}
-
-else if (nextBlkMetaData != NULL &&  free_block(va) && (original_size + next_size >= new_size)) {
-get_block_size(va) = new_size;
-   nextBlkMetaData->size -= (new_size - original_size);
-   return 0;
-
-
-}
-
-}
-
-
-
-//handling the special cases
-if (va == NULL) {
-      if (new_size == 0) {
-          return NULL;  //alloc_FF(0) in case of realloc_block_FF(null,0)
-      }
-      else {
-          return alloc_FF(new_size);  //alloc_FF(n) in case of realloc_block_FF(null,new_size)
-      }
- }
-else if (new_size == 0) {
-      free_block(va);  // to free(va) in case of realloc_block_FF(va,0)
-      return NULL;
-  }
-
-
-
-
-panic("realloc_block_FF is not implemented yet");
-return NULL;
-*/
-}
-
