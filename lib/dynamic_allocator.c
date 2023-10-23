@@ -134,18 +134,21 @@ void *alloc_block_FF(uint32 size)
                 block->size=size;
                 if(free_block_size>=sizeOfMetaData())
                 {
-                struct BlockMetaData* free_block = (struct BlockMetaData*) &block[(uint32)block->size];
+                struct BlockMetaData* free_block = block;
+                char* free_block_char=(char*)free_block;
+                free_block_char+=block->size;
+                free_block=(struct BlockMetaData*)free_block_char;
                     free_block->size= free_block_size;
                     free_block->is_free=1;
                     LIST_INSERT_AFTER(&block_list, block, free_block);
                 }
-                return &(block[sizeOfMetaData()-16]);
+                return ++block;
             }
 
             else if(size == block->size)
                 {
                     block->is_free=0;
-                    return &(block[sizeOfMetaData()-16]);
+                    return ++block;
 
                 }
 
