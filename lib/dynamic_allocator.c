@@ -108,9 +108,6 @@ void initialize_dynamic_allocator(uint32 daStart, uint32 initSizeOfAllocatedSpac
 //=========================================
 // [4] ALLOCATE BLOCK BY FIRST FIT:
 //=========================================
-//=========================================
-// [4] ALLOCATE BLOCK BY FIRST FIT:
-//=========================================
 void *alloc_block_FF(uint32 size)
 {
     //TODO: [PROJECT'23.MS1 - #6] [3] DYNAMIC ALLOCATOR - alloc_block_FF()
@@ -155,18 +152,20 @@ void *alloc_block_FF(uint32 size)
         }
 
     }
+    //if no blocks were found:
     struct BlockMetaData* old_sbrk=sbrk(size);
     if(old_sbrk==(void*)-1)
         return NULL;
     else
     {
-        //returns old sbreak, go from here
+        //returns old sbreak, add block there
         old_sbrk->size= size;
         old_sbrk->is_free=1;
         LIST_INSERT_AFTER(&block_list, block, old_sbrk);
-        return &(old_sbrk[sizeOfMetaData()-1]);
+        return ++old_sbrk;
     }
-}//=========================================
+}
+//=========================================
 // [5] ALLOCATE BLOCK BY BEST FIT:
 //=========================================
 void *alloc_block_BF(uint32 size)
