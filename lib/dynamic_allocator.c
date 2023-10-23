@@ -10,6 +10,25 @@
 
 
 //==================================================================================//
+//============================== HELPER FUNCTIONS ===================================//
+//==================================================================================//
+void shrink_block(struct BlockMetaData* oldBlock, uint32 allocatedSize)
+{
+    uint32 free_block_size=oldBlock->size-allocatedSize;
+    if(free_block_size>=sizeOfMetaData())
+    {
+    struct BlockMetaData* free_block = oldBlock;
+    char* free_block_char=(char*)free_block;
+    free_block_char+=allocatedSize;
+    free_block=(struct BlockMetaData*)free_block_char;
+        free_block->size= free_block_size;
+        free_block->is_free=1;
+        LIST_INSERT_AFTER(&block_list, oldBlock, free_block);
+    }
+    oldBlock->is_free=0;
+    oldBlock->size=allocatedSize;
+}
+//==================================================================================//
 //============================== GIVEN FUNCTIONS ===================================//
 //==================================================================================//
 
@@ -126,19 +145,8 @@ void *alloc_block_FF(uint32 size)
             }
             else if(size < block->size)
             {
-                block->is_free=0;
-                uint32 free_block_size=block->size-size;
-                block->size=size;
-                if(free_block_size>=sizeOfMetaData())
-                {
-                struct BlockMetaData* free_block = block;
-                char* free_block_char=(char*)free_block;
-                free_block_char+=block->size;
-                free_block=(struct BlockMetaData*)free_block_char;
-                    free_block->size= free_block_size;
-                    free_block->is_free=1;
-                    LIST_INSERT_AFTER(&block_list, block, free_block);
-                }
+            	shrink_block(block, size);
+
                 return ++block;
             }
 
@@ -215,15 +223,12 @@ void *realloc_block_FF(void* va, uint32 new_size)
     //(1)handling the special cases
     if (va == NULL)
     {
-	     if (new_size == 0)
-	      	return alloc_block_FF(0);  //alloc_FF(0) in case of realloc_block_FF(null,0)             
-	     else
-		  	return alloc_block_FF(new_size);  //alloc_FF(n) in case of realloc_block_FF(null,new_size)
+    	return alloc_block_FF(new_size); //alloc_FF(n) in case of realloc_block_FF(null, new_size), and size=0 handled in alloc
 
      }
     else if (new_size == 0)
     {
-        free_block(va);  // to free(va) in case of realloc_block_FF(va,0)
+       free_block(va); //to free(va) in case of realloc_block_FF(va,0)
         return NULL;
     }
 
@@ -237,10 +242,9 @@ void *realloc_block_FF(void* va, uint32 new_size)
 
 	if (new_size <= get_block_size(curBlkMetaData))
 	{
-		// Update the block's size
+		// Update the  block's size
 	   curBlkMetaData->size = new_size;
 	   return va;
-	   break;
 	}
 
 	// Calculate the required additional size
@@ -257,4 +261,5 @@ void *realloc_block_FF(void* va, uint32 new_size)
 		nextBlkMetaData->is_free = 0;
 		return va;
 	}
+	return NULL;
 }
