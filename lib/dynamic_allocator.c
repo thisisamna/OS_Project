@@ -226,7 +226,7 @@ void *realloc_block_FF(void* va, uint32 new_size)
     	return alloc_block_FF(new_size); //alloc_FF(n) in case of realloc_block_FF(null, new_size), and size=0 handled in alloc
 
      }
-    else if (new_size == 0)
+    if (new_size == 0)
     {
        free_block(va); //to free(va) in case of realloc_block_FF(va,0)
         return NULL;
@@ -237,6 +237,7 @@ void *realloc_block_FF(void* va, uint32 new_size)
 	// Get the current block's metadata
 
 	struct BlockMetaData *curBlkMetaData = ((struct BlockMetaData *)va - 1);
+
 
 	//(2) Check if the new size is smaller than the current size
 
