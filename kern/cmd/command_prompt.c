@@ -379,7 +379,6 @@ int process_command(int number_of_arguments, char** arguments)
 {
 	//TODO: [PROJECT'23.MS1 - #2] [1] PLAY WITH CODE! - process_command
 
-    //rip clean code ):
 	LIST_INIT(&foundCommands);
 	for(int i = 0; i<NUM_OF_COMMANDS; i++)
 	{
@@ -400,28 +399,27 @@ int process_command(int number_of_arguments, char** arguments)
 		{return CMD_INVALID;}
 }
 
-//function has some logical errors
+
 int foundMatches(int number_of_arguments, char** arguments)
 {
 	int foundMatches = 0;
-	int num_of_common_letters;
+	int num_of_common_letters = 0;
+	char *currentChar = NULL;
 
 	for(int i = 0; i<NUM_OF_COMMANDS; i++)
 	{
 		num_of_common_letters = 0;
+
 		for(int j =0; j<strlen(arguments[0]); j++)
 		{
-
-			if((strfind(commands[i].name, arguments[0][j])) == NULL)
+			if((strchr(commands[i].name, arguments[0][j])) != NULL)
 			{
-				//continue;
+				if(strchr(commands[i].name, arguments[0][j]) > currentChar)
+				{
+					currentChar = strchr(commands[i].name, arguments[0][j]);
+					num_of_common_letters ++;
+				}
 			}
-			else
-			{
-				//cprintf("arguments[0][j]: %c and commands[i].name: %s\n", arguments[0][j], commands[i].name);
-				num_of_common_letters ++;
-			}
-
 		}
 
 		if(num_of_common_letters == strlen(arguments[0]))
@@ -429,11 +427,11 @@ int foundMatches(int number_of_arguments, char** arguments)
 			LIST_INSERT_HEAD(&foundCommands, &commands[i]);
 			foundMatches = 1;
 		}
-
 	}
-		if(foundMatches)
-			return 1;
-		else
-			return 0;
+
+	if(foundMatches)
+		return 1;
+	else
+		return 0;
 }
 
