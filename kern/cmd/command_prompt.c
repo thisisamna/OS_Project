@@ -412,13 +412,9 @@ int foundMatches(int number_of_arguments, char** arguments)
 		for(int j =0; j<strlen(arguments[0]); j++)
 		{
 
-			if((strfind(commands[i].name, arguments[0][j])) == NULL)
+			if((strchr(commands[i].name, arguments[0][j])) != NULL)
 			{
 				//continue;
-			}
-			else
-			{
-				//cprintf("arguments[0][j]: %c and commands[i].name: %s\n", arguments[0][j], commands[i].name);
 				num_of_common_letters ++;
 			}
 
