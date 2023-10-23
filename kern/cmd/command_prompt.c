@@ -399,25 +399,18 @@ int process_command(int number_of_arguments, char** arguments)
 		{return CMD_INVALID;}
 }
 
-<<<<<<< HEAD
-//function has some logical errors
-int foundMatches(int number_of_arguments, char** arguments)
-{
-	int foundMatches = 0;
-	int num_of_common_letters;
-=======
+
 
 int foundMatches(int number_of_arguments, char** arguments)
 {
 	int foundMatches = 0;
 	int num_of_common_letters = 0;
 	char *currentChar = NULL;
->>>>>>> 2e249cd299953cda5ffc640319d516fe2dae763a
 
 	for(int i = 0; i<NUM_OF_COMMANDS; i++)
 	{
 		num_of_common_letters = 0;
-<<<<<<< HEAD
+
 		for(int j =0; j<strlen(arguments[0]); j++)
 		{
 
@@ -440,31 +433,5 @@ int foundMatches(int number_of_arguments, char** arguments)
 			return 1;
 		else
 			return 0;
-=======
-
-		for(int j =0; j<strlen(arguments[0]); j++)
-		{
-			if((strchr(commands[i].name, arguments[0][j])) != NULL)
-			{
-				if(strchr(commands[i].name, arguments[0][j]) > currentChar)
-				{
-					currentChar = strchr(commands[i].name, arguments[0][j]);
-					num_of_common_letters ++;
-				}
-			}
-		}
-
-		if(num_of_common_letters == strlen(arguments[0]))
-		{
-			LIST_INSERT_HEAD(&foundCommands, &commands[i]);
-			foundMatches = 1;
-		}
-	}
-
-	if(foundMatches)
-		return 1;
-	else
-		return 0;
->>>>>>> 2e249cd299953cda5ffc640319d516fe2dae763a
 }
 
