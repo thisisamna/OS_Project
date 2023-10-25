@@ -28,6 +28,18 @@ void shrink_block(struct BlockMetaData* oldBlock, uint32 allocatedSize)
     oldBlock->is_free=0;
     oldBlock->size=allocatedSize;
 }
+
+uint32* findMinimum(uint32* arr[], int size) {
+	 uint32* min = arr[0];  // Assume the first element is the minimum
+
+    for (int i = 1; i < size; i++) {
+        if (*arr[i] < *min) {
+            min = arr[i];  // Update min if a smaller element is found
+        }
+    }
+
+    return min;
+}
 //==================================================================================//
 //============================== GIVEN FUNCTIONS ===================================//
 //==================================================================================//
@@ -179,10 +191,62 @@ void *alloc_block_FF(uint32 size)
 void *alloc_block_BF(uint32 size)
 {
 	//TODO: [PROJECT'23.MS1 - BONUS] [3] DYNAMIC ALLOCATOR - alloc_block_BF()
-	panic("alloc_block_BF is not implemented yet");
+	//panic("alloc_block_BF is not implemented yet");
+	if(size==0)
 	return NULL;
-}
+	size += sizeOfMetaData();
+	struct BlockMetaData* block;
+	//LIST_FOREACH(block, &block_list){
+	//In Case the size = block.size exactly
+		//if(size==block->size){
+		//	 block->is_free=0;
+		   //   return ++block;
+		//}
+		//else
+		//	continue;
+	//}
+	//int BlkListsize = LIST_SIZE(&block_list);
+	//uint32* arr[BlkListsize];
+	uint32 mindiff=UINT_MAX;
+	struct BlockMetaData* point = NULL;
+     LIST_FOREACH(block, &block_list){
+	 if(size<block->size && block->is_free){
+		 if (((block->size)-size)<=mindiff){
+			 point=block;
+			 mindiff=(block->size)-size;
+			 if(mindiff==0){
+				 block->is_free=0;
+				return ++block;
+			 }
 
+		 }
+
+		 //for (int i = 0; i < BlkListsize; i++) {
+			// arr[i]=(uint32*)block;
+			// *arr[i]=((block->size)-size);
+		// }
+		// block=(struct BlockMetaData*)findMinimum(arr,BlkListsize)
+	 }
+	// block->is_free=0;
+	// return ++block;
+       }
+     if(point!=NULL){
+    shrink_block(point, size);
+     return ++point;
+     }
+     //if no blocks were found:
+         struct BlockMetaData* old_sbrk=sbrk(size);
+         if(old_sbrk==(void*)-1)
+             return NULL;
+         else
+         {
+             //returns old sbreak, add block there
+             old_sbrk->size= size;
+             old_sbrk->is_free=1;
+             LIST_INSERT_AFTER(&block_list, block, old_sbrk);
+             return ++old_sbrk;
+         }
+}
 //=========================================
 // [6] ALLOCATE BLOCK BY WORST FIT:
 //=========================================
