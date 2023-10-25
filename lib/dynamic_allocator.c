@@ -12,7 +12,7 @@
 //==================================================================================//
 //============================== HELPER FUNCTIONS ===================================//
 //==================================================================================//
-void shrink_block(struct BlockMetaData* oldBlock, uint32 allocatedSize)
+void shrink_block(struct BlockMetaData* oldBlock, uint32 allocatedSize) // including metadata
 {
     uint32 free_block_size=oldBlock->size-allocatedSize;
     if(free_block_size>=sizeOfMetaData())
@@ -223,14 +223,19 @@ void free_block(void *va)
 			{
 				(prev->size)+=get_block_size(block);
 				block->size=0;
+				block->is_free=0;
 				LIST_REMOVE(&block_list, block);
-				block=NULL;
+				block=prev;
 			}
 			if (next!=NULL && next->is_free)   // if next block is free
 			{
 				block->size+=get_block_size(next);
+				next->size=0;
+
+				next->is_free=0;
+
 				LIST_REMOVE(&block_list, next);
-				next=NULL;
+				next=block;
 			}
 }
 
@@ -270,24 +275,26 @@ void *realloc_block_FF(void* va, uint32 new_size)
 	if (new_size <= get_block_size(curBlkMetaData))
 	{
 		// Update the  block's size
-	   curBlkMetaData->size = new_size;
+	   shrink_block(curBlkMetaData, new_size+sizeOfMetaData());
 	   return va;
 	}
 
-	// Calculate the required additional size
+	//(3) Check if the new size is larger than current
 
-	uint32 additional_size = new_size - curBlkMetaData->size;
-
-	//(3)Check if there's sufficient free block in front of the current block
+	uint32 additional_size = new_size - curBlkMetaData->size - sizeOfMetaData();
 
 	struct BlockMetaData *nextBlkMetaData = LIST_NEXT(curBlkMetaData);
-	if (nextBlkMetaData != NULL && nextBlkMetaData->is_free && get_block_size(nextBlkMetaData) >= additional_size)
-	{
-		// Resize the current block
-		curBlkMetaData->size = new_size;
-		nextBlkMetaData->is_free = 0;
-		return va;
+	if (nextBlkMetaData != NULL && nextBlkMetaData->is_free){
+		//(3.1)Check if there's sufficient free space right in front of block
+		if(get_block_size(nextBlkMetaData)-sizeOfMetaData() >= additional_size)
+		{
+			// Resize the current block
+			curBlkMetaData->size = new_size+sizeOfMetaData();
+			free_block(nextBlkMetaData);
+			return va;
+		}
 	}
-	return NULL;
+	//(3.2)Check if there's a sufficient free block anywhere in the list
+	return alloc_block_FF(new_size);
 }
 
