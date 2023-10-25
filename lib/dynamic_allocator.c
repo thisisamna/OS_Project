@@ -266,30 +266,30 @@ void *realloc_block_FF(void* va, uint32 new_size)
 
 	// Get the current block's metadata
 
-	struct BlockMetaData *curBlkMetaData = ((struct BlockMetaData *)va - 1);
+	struct BlockMetaData *block = ((struct BlockMetaData *)va - 1);
 
 
 	//(2) Check if the new size is smaller than the current size
 
-	if (new_size <= get_block_size(curBlkMetaData))
+	if (new_size <= get_block_size(block))
 	{
 		// Update the  block's size
-	   shrink_block(curBlkMetaData, new_size+sizeOfMetaData());
+	   shrink_block(block, new_size+sizeOfMetaData());
 	   return va;
 	}
 
 	//(3) Check if the new size is larger than current
 
-	uint32 additional_size = new_size - curBlkMetaData->size - sizeOfMetaData();
+	uint32 additional_size = new_size - block->size - sizeOfMetaData();
 
-	struct BlockMetaData *nextBlkMetaData = LIST_NEXT(curBlkMetaData);
-	if (nextBlkMetaData != NULL && nextBlkMetaData->is_free){
+	struct BlockMetaData *next = LIST_NEXT(block);
+	if (next != NULL && next->is_free){
 		//(3.1)Check if there's sufficient free space right in front of block
-		if(get_block_size(nextBlkMetaData)-sizeOfMetaData() >= additional_size)
+		if(get_block_size(next)-sizeOfMetaData() >= additional_size)
 		{
 			// Resize the current block
-			curBlkMetaData->size = new_size+sizeOfMetaData();
-			free_block(nextBlkMetaData);
+			block->size = new_size+sizeOfMetaData();
+			free_block(next);
 			return va;
 		}
 	}
