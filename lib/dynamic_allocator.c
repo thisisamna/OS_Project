@@ -218,25 +218,24 @@ void free_block(void *va)
 
 			struct BlockMetaData *prev = LIST_PREV(block);
 			struct BlockMetaData *next = LIST_NEXT(block);
-
-			if (prev!=NULL && prev->is_free)   // if prev block is free
-			{
-				(prev->size)+=get_block_size(block);
-				block->size=0;
-				block->is_free=0;
-				LIST_REMOVE(&block_list, block);
-				block=prev;
-			}
 			if (next!=NULL && next->is_free)   // if next block is free
 			{
-				block->size+=get_block_size(next);
+				block->size += next->size;
 				next->size=0;
-
 				next->is_free=0;
 
 				LIST_REMOVE(&block_list, next);
-				next=block;
+
+				//next=block;
 			}
+			if (prev!=NULL && prev->is_free)   // if prev block is free
+			{
+				prev->size += block->size;
+				block->size=0;
+				block->is_free=0;
+				LIST_REMOVE(&block_list, block);
+			}
+
 }
 
 
