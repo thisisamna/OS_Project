@@ -207,7 +207,43 @@ void *alloc_block_NF(uint32 size)
 void free_block(void *va)
 {
 	//TODO: [PROJECT'23.MS1 - #7] [3] DYNAMIC ALLOCATOR - free_block()
-	panic("free_block is not implemented yet");
+	//panic("free_block is not implemented yet");
+	if(va ==NULL)   // if given address is pointing to null
+		    	return;
+		    struct BlockMetaData* block = ((struct BlockMetaData *) va-1);
+			if(block->is_free==0)   // if block is free already
+				return;
+			else if(block->is_free==1)  // if block is occupied
+			{
+				 block->is_free =0;
+			}
+			struct BlockMetaData *prev = LIST_PREV(block);
+			struct BlockMetaData *next = LIST_NEXT(block);
+			if(prev == NULL && next == NULL)
+				return;
+			else{
+			if((prev->is_free == 0 && next->is_free == 0)) // if previous & next blocks are both free
+					{
+						(prev->size)+=(get_block_size(block) + get_block_size(next));
+						block->size=0;
+						(next)->size=0;
+						next=prev;
+						block=prev;
+					}
+					else if((prev->is_free)==0) // if previous block is free
+					{
+						(prev->size)+=get_block_size(block);
+						block->size=0;
+						block=prev;
+					}
+					else if ((next->is_free)==0)   // if next block is free
+					{
+						block->size+=get_block_size(next);
+						(next->size)=0;
+						next=block;
+					}
+			}
+
 }
 
 //=========================================
