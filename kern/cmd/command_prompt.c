@@ -378,37 +378,60 @@ int execute_command(char *command_string)
 int process_command(int number_of_arguments, char** arguments)
 {
 	//TODO: [PROJECT'23.MS1 - #2] [1] PLAY WITH CODE! - process_command
-	//Comment the following line before start coding...
-	//Function to parse any command and execute it
-	//(simply by calling its corresponding function)
-
-
-	if (number_of_arguments == 0)
-		return 0;
-
-	// Lookup in the commands array and execute the command
-	int command_found = 0;
-	int i ;
-	for (i = 0; i < NUM_OF_COMMANDS; i++)
+    //rip clean code ):
+	LIST_INIT(&foundCommands);
+	for(int i = 0; i<NUM_OF_COMMANDS; i++)
 	{
-		if (strcmp(arguments[0], commands[i].name) == 0)
+		//checking if command exists
+		if(!strcmp(commands[i].name , arguments[0]))
 		{
-			command_found = 1;
-			break;
+			if((commands[i].num_of_args == (number_of_arguments - 1)) || ((commands[i].num_of_args = -1) && (number_of_arguments>= 1)))
+				return i;
+			else
+				return CMD_INV_NUM_ARGS;
 		}
 	}
 
-	if(command_found)
-	{
-		int return_value;
-		return_value = commands[i].function_to_execute(number_of_arguments, arguments);
-		return return_value;
-	}
-	else
-	{
-		//if not found, then it's unknown command
-		cprintf("Unknown command '%s'\n", arguments[0]);
-		return 0;
-	}
 
+	if(foundMatches(number_of_arguments, arguments))
+		{return CMD_MATCHED;}
+	else
+		{return CMD_INVALID;}
 }
+
+
+
+int foundMatches(int number_of_arguments, char** arguments)
+{
+	int foundMatches = 0;
+	int num_of_common_letters = 0;
+	char *currentChar = NULL;
+
+	for(int i = 0; i<NUM_OF_COMMANDS; i++)
+	{
+		num_of_common_letters = 0;
+
+		for(int j =0; j<strlen(arguments[0]); j++)
+		{
+
+			if((strchr(commands[i].name, arguments[0][j])) != NULL)
+			{
+				//continue;
+				num_of_common_letters ++;
+			}
+
+		}
+
+		if(num_of_common_letters == strlen(arguments[0]))
+		{
+			LIST_INSERT_HEAD(&foundCommands, &commands[i]);
+			foundMatches = 1;
+		}
+
+	}
+		if(foundMatches)
+			return 1;
+		else
+			return 0;
+}
+

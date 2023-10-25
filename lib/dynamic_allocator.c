@@ -12,7 +12,7 @@
 //==================================================================================//
 //============================== HELPER FUNCTIONS ===================================//
 //==================================================================================//
-void shrink_block(struct BlockMetaData* oldBlock, uint32 allocatedSize)
+void shrink_block(struct BlockMetaData* oldBlock, uint32 allocatedSize) // including metadata
 {
     uint32 free_block_size=oldBlock->size-allocatedSize;
     if(free_block_size>=sizeOfMetaData())
@@ -271,8 +271,38 @@ void *alloc_block_NF(uint32 size)
 void free_block(void *va)
 {
 	//TODO: [PROJECT'23.MS1 - #7] [3] DYNAMIC ALLOCATOR - free_block()
-	panic("free_block is not implemented yet");
+	//panic("free_block is not implemented yet");
+	if(va ==NULL)   // if given address is pointing to null
+		    	return;
+		    struct BlockMetaData* block = ((struct BlockMetaData *) va-1);
+			if(block->is_free)   // if block is free already
+				return;
+			else// if block is occupied
+				 block->is_free =1;
+
+			struct BlockMetaData *prev = LIST_PREV(block);
+			struct BlockMetaData *next = LIST_NEXT(block);
+			if (next!=NULL && next->is_free)   // if next block is free
+			{
+				block->size += next->size;
+				next->size=0;
+				next->is_free=0;
+
+				LIST_REMOVE(&block_list, next);
+
+				//next=block;
+			}
+			if (prev!=NULL && prev->is_free)   // if prev block is free
+			{
+				prev->size += block->size;
+				block->size=0;
+				block->is_free=0;
+				LIST_REMOVE(&block_list, block);
+			}
+
 }
+
+
 
 //=========================================
 // [4] REALLOCATE BLOCK BY FIRST FIT:
@@ -290,7 +320,7 @@ void *realloc_block_FF(void* va, uint32 new_size)
     	return alloc_block_FF(new_size); //alloc_FF(n) in case of realloc_block_FF(null, new_size), and size=0 handled in alloc
 
      }
-    else if (new_size == 0)
+    if (new_size == 0)
     {
        free_block(va); //to free(va) in case of realloc_block_FF(va,0)
         return NULL;
@@ -300,30 +330,34 @@ void *realloc_block_FF(void* va, uint32 new_size)
 
 	// Get the current block's metadata
 
-	struct BlockMetaData *curBlkMetaData = ((struct BlockMetaData *)va - 1);
+	struct BlockMetaData *block = ((struct BlockMetaData *)va - 1);
+
 
 	//(2) Check if the new size is smaller than the current size
 
-	if (new_size <= get_block_size(curBlkMetaData))
+	if (new_size <= get_block_size(block))
 	{
 		// Update the  block's size
-	   curBlkMetaData->size = new_size;
+	   shrink_block(block, new_size+sizeOfMetaData());
 	   return va;
 	}
 
-	// Calculate the required additional size
+	//(3) Check if the new size is larger than current
 
-	uint32 additional_size = new_size - curBlkMetaData->size;
+	uint32 additional_size = new_size - block->size - sizeOfMetaData();
 
-	//(3)Check if there's sufficient free block in front of the current block
-
-	struct BlockMetaData *nextBlkMetaData = LIST_NEXT(curBlkMetaData);
-	if (nextBlkMetaData != NULL && nextBlkMetaData->is_free && get_block_size(nextBlkMetaData) >= additional_size)
-	{
-		// Resize the current block
-		curBlkMetaData->size = new_size;
-		nextBlkMetaData->is_free = 0;
-		return va;
+	struct BlockMetaData *next = LIST_NEXT(block);
+	if (next != NULL && next->is_free){
+		//(3.1)Check if there's sufficient free space right in front of block
+		if(get_block_size(next)-sizeOfMetaData() >= additional_size)
+		{
+			// Resize the current block
+			block->size = new_size+sizeOfMetaData();
+			free_block(next);
+			return va;
+		}
 	}
-	return NULL;
+	//(3.2)Check if there's a sufficient free block anywhere in the list
+	return alloc_block_FF(new_size);
 }
+
