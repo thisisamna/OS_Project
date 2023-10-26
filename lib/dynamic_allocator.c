@@ -340,35 +340,39 @@ void *realloc_block_FF(void* va, uint32 new_size)
 		// Update the  block's size
 
 	   shrink_block(block, new_size+sizeOfMetaData());
-	   /*
-		if (next!=NULL && next->is_free)   // if next block is free
+		struct BlockMetaData *next = LIST_NEXT(block);
+
+		/*if (next!=NULL && next->is_free)   // if next block is free
 		{
-			block->size += next->size;
+			//block->size += next->size;
 			next->size=0;
 			next->is_free=0;
 
-			LIST_REMOVE(&block_list, next);
+			//LIST_REMOVE(&block_list, next);
 
 			//next=block;
 		}
 		*/
+
 	   return va;
 	}
 
 	//(3) Check if the new size is larger than current
-
+	//NEW size without meta
 	uint32 additional_size = new_size - block->size - sizeOfMetaData();
 
 	struct BlockMetaData *next = LIST_NEXT(block);
 	if (next != NULL && next->is_free){
 		//(3.1)Check if there's sufficient free space right in front of block
-		if(get_block_size(next)-sizeOfMetaData() >= additional_size)
+		if(next->size +sizeOfMetaData() >= additional_size)
 		{
 			// Resize the current block
 			block->size = new_size+sizeOfMetaData();
 			free_block(next);
+			//next->size -= (additional_size + sizeOfMetaData());
 			return va;
 		}
+
 	}
 	//(3.2)Check if there's a sufficient free block anywhere in the list
 	return alloc_block_FF(new_size);
