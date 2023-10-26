@@ -342,7 +342,7 @@ void *realloc_block_FF(void* va, uint32 new_size)
 
 	   shrink_block(block, new_size+sizeOfMetaData());
 		struct BlockMetaData *next = LIST_NEXT(block);
-
+		free_block(next);
 		/*if (next!=NULL && next->is_free)   // if next block is free
 		{
 			//block->size += next->size;
@@ -352,8 +352,8 @@ void *realloc_block_FF(void* va, uint32 new_size)
 			//LIST_REMOVE(&block_list, next);
 
 			//next=block;
-		}
-		*/
+		}*/
+
 
 	   return va;
 	}
@@ -367,10 +367,13 @@ void *realloc_block_FF(void* va, uint32 new_size)
 		//(3.1)Check if there's sufficient free space right in front of block
 		if(next->size +sizeOfMetaData() >= additional_size)
 		{
-			// Resize the current block
+			shrink_block(next, additional_size);
 			block->size = new_size+sizeOfMetaData();
-			free_block(next);
-			//next->size -= (additional_size + sizeOfMetaData());
+			next -> size=0;
+			next->is_free=0;
+			LIST_REMOVE(&block_list, next);
+			free_block(LIST_NEXT(next));
+			// Resize the current block
 			return va;
 		}
 
