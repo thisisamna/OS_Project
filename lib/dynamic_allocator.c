@@ -210,8 +210,8 @@ void *alloc_block_BF(uint32 size)
 	uint32 mindiff=UINT_MAX;
 	struct BlockMetaData* point = NULL;
      LIST_FOREACH(block, &block_list){
-	 if(size<block->size && block->is_free){
-		 if (((block->size)-size)<=mindiff){
+	 if(block->size >= size && block->is_free){
+		 if (((block->size)-size)<mindiff){
 			 point=block;
 			 mindiff=(block->size)-size;
 			 if(mindiff==0){
