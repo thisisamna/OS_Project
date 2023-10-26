@@ -1181,6 +1181,17 @@ void test_realloc_block_FF()
 	//TODO: [PROJECT'23.MS1 - #9] [3] DYNAMIC ALLOCATOR - test_realloc_block_FF()
 	//CHECK MISSING CASES AND TRY TO TEST THEM !
 
+	//====================================================================//
+	//[0] Team's Own Testing
+	//====================================================================//
+
+	void* va1 = realloc_block_FF((void*)USER_LIMIT, 15);
+	if(va1 != NULL)
+	{
+		panic("opss you did not pass this test");
+	}
+
+
 	int eval = 0;
 	bool is_correct;
 
@@ -1440,6 +1451,9 @@ void test_realloc_block_FF()
 
 
 	cprintf("test realloc_block with FIRST FIT completed. Evaluation = %d%\n", eval);
+
+
+
 
 }
 

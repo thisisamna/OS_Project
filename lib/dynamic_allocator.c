@@ -313,9 +313,11 @@ void *realloc_block_FF(void* va, uint32 new_size)
 {
     //TODO: [PROJECT'23.MS1 - #8] [3] DYNAMIC ALLOCATOR - realloc_block_FF()
 
-    uint32 original_size = get_block_size(va);
 
     //(1)handling the special cases
+    if(va >= (void*)USER_LIMIT)
+    	return (void*) new_size;
+
     if (va == NULL)
     {
     	return alloc_block_FF(new_size); //alloc_FF(n) in case of realloc_block_FF(null, new_size), and size=0 handled in alloc
@@ -326,6 +328,8 @@ void *realloc_block_FF(void* va, uint32 new_size)
        free_block(va); //to free(va) in case of realloc_block_FF(va,0)
         return NULL;
     }
+
+
 
 
 
@@ -341,20 +345,8 @@ void *realloc_block_FF(void* va, uint32 new_size)
 		// Update the  block's size
 
 	   shrink_block(block, new_size+sizeOfMetaData());
-		struct BlockMetaData *next = LIST_NEXT(block);
-		free_block(next);
-		/*if (next!=NULL && next->is_free)   // if next block is free
-		{
-			//block->size += next->size;
-			next->size=0;
-			next->is_free=0;
-
-			//LIST_REMOVE(&block_list, next);
-
-			//next=block;
-		}*/
-
-
+	   struct BlockMetaData *next = LIST_NEXT(block);
+	   free_block(next);
 	   return va;
 	}
 
