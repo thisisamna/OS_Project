@@ -333,37 +333,37 @@ void *realloc_block_FF(void* va, uint32 new_size)
 
 
 	// Get the current block's metadata
-	struct BlockMetaData *block = ((struct BlockMetaData *)va - 1);
+	struct BlockMetaData *blockToReallocate = ((struct BlockMetaData *)va - 1);
 
 
 	//(2) Check if the new size is smaller than the current size
-	if (new_size <= block->size)
+	if (new_size <= blockToReallocate->size)
 	{
 	   // Update the  block's size
-	   shrink_block(block, new_size+sizeOfMetaData());
-	   struct BlockMetaData *next = LIST_NEXT(block);
-	   free_block(next);
+	   shrink_block(blockToReallocate, new_size+sizeOfMetaData());
+	   struct BlockMetaData *freeMiniBlock = LIST_NEXT(blockToReallocate);
+	   free_block(freeMiniBlock); //so that it merges if there is a free block after it
 	   return va;
 	}
 
 	//(3) Check if the new size is larger than current
 	//NEW size without meta
-	uint32 additional_size = new_size - block->size;// - sizeOfMetaData();
+	uint32 additional_size = new_size - blockToReallocate->size;// - sizeOfMetaData();
 
-	struct BlockMetaData *next = LIST_NEXT(block);
-	if (next != NULL && next->is_free){
+	struct BlockMetaData *blockAfter = LIST_NEXT(blockToReallocate);
+	if (blockAfter != NULL && blockAfter->is_free){
 		//(3.1)Check if there's sufficient free space right in front of block
 		//the size of metadata is needed to save next info we <<<CANT>>> get rid of it
-		if(next->size - sizeOfMetaData() >= additional_size)
+		if(blockAfter->size - sizeOfMetaData() >= additional_size)
 		{
-			shrink_block(next, additional_size);
-			block->size = new_size+sizeOfMetaData();
-			next->size=0;
-			next->is_free=0;
+			shrink_block(blockAfter, additional_size);
+			blockToReallocate->size = new_size+sizeOfMetaData();
+			blockAfter->size=0;
+			blockAfter->is_free=0;
 			//free the other split of the next block
-			free_block(LIST_NEXT(next));
+			free_block(LIST_NEXT(blockAfter)); //newly freed block
 			//remove the next block from the block_list, but its still somewhere in the memory
-			LIST_REMOVE(&block_list, next);
+			LIST_REMOVE(&block_list, blockAfter);
 			// Resize the current block
 			return va;
 		}
