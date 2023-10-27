@@ -128,11 +128,11 @@ void initialize_dynamic_allocator(uint32 daStart, uint32 initSizeOfAllocatedSpac
 	//TODO: [PROJECT'23.MS1 - #5] [3] DYNAMIC ALLOCATOR - initialize_dynamic_allocator()
 	LIST_INIT(&block_list);
 
-	struct BlockMetaData* block = (struct BlockMetaData *) daStart;
-	block->size= initSizeOfAllocatedSpace;;
-	block->is_free=1;
+	struct BlockMetaData* initBlock = (struct BlockMetaData *) daStart;
+	initBlock->size= initSizeOfAllocatedSpace;;
+	initBlock->is_free=1;
 
-	LIST_INSERT_HEAD(&block_list, block);
+	LIST_INSERT_HEAD(&block_list, initBlock);
 
 }
 
@@ -145,27 +145,27 @@ void *alloc_block_FF(uint32 size)
     //panic("alloc_block_FF is not implemented yet");
     if(size==0)
         return NULL;
-    struct BlockMetaData* block;
+    struct BlockMetaData* blockInList;
     size += sizeOfMetaData();
-    LIST_FOREACH(block, &block_list)
+    LIST_FOREACH(blockInList, &block_list)
     {
-        if(block->is_free)
+        if(blockInList->is_free)
         {
-            if(size > block->size)
+            if(size > blockInList->size)
             {
                 continue;
             }
-            else if(size < block->size)
+            else if(size < blockInList->size)
             {
-            	shrink_block(block, size);
+            	shrink_block(blockInList, size);
 
-                return ++block;
+                return ++blockInList;
             }
 
-            else if(size == block->size)
+            else if(size == blockInList->size)
                 {
-                    block->is_free=0;
-                    return ++block;
+            	blockInList->is_free=0;
+                    return ++blockInList;
 
                 }
 
@@ -181,7 +181,7 @@ void *alloc_block_FF(uint32 size)
         //returns old sbreak, add block there
         old_sbrk->size= size;
         old_sbrk->is_free=1;
-        LIST_INSERT_AFTER(&block_list, block, old_sbrk);
+        LIST_INSERT_AFTER(&block_list, blockInList, old_sbrk); //blockInList is now the last block in the list
         return ++old_sbrk;
     }
 }
@@ -195,7 +195,7 @@ void *alloc_block_BF(uint32 size)
 	if(size==0)
 	return NULL;
 	size += sizeOfMetaData();
-	struct BlockMetaData* block;
+	struct BlockMetaData* blockInList;
 	//LIST_FOREACH(block, &block_list){
 	//In Case the size = block.size exactly
 		//if(size==block->size){
@@ -209,14 +209,14 @@ void *alloc_block_BF(uint32 size)
 	//uint32* arr[BlkListsize];
 	uint32 mindiff=UINT_MAX;
 	struct BlockMetaData* point = NULL;
-     LIST_FOREACH(block, &block_list){
-	 if(block->size >= size && block->is_free){
-		 if (((block->size)-size)<mindiff){
-			 point=block;
-			 mindiff=(block->size)-size;
+     LIST_FOREACH(blockInList, &block_list){
+	 if(blockInList->size >= size && blockInList->is_free){
+		 if (((blockInList->size)-size)<mindiff){
+			 point=blockInList;
+			 mindiff=(blockInList->size)-size;
 			 if(mindiff==0){
-				 block->is_free=0;
-				return ++block;
+				 blockInList->is_free=0;
+				return ++blockInList;
 			 }
 
 		 }
@@ -243,7 +243,7 @@ void *alloc_block_BF(uint32 size)
              //returns old sbreak, add block there
              old_sbrk->size= size;
              old_sbrk->is_free=1;
-             LIST_INSERT_AFTER(&block_list, block, old_sbrk);
+             LIST_INSERT_AFTER(&block_list, blockInList, old_sbrk);
              return ++old_sbrk;
          }
 }
@@ -275,27 +275,27 @@ void free_block(void *va)
 	//panic("free_block is not implemented yet");
 	if(va ==NULL)   // if given address is pointing to null
 		    	return;
-		    struct BlockMetaData* block = ((struct BlockMetaData *) va-1);
-				 block->is_free =1;
+		    struct BlockMetaData* blockToFree = ((struct BlockMetaData *) va-1);
+		    blockToFree->is_free =1;
 
-			struct BlockMetaData *prev = LIST_PREV(block);
-			struct BlockMetaData *next = LIST_NEXT(block);
-			if (next!=NULL && next->is_free)   // if next block is free
+			struct BlockMetaData *blockBefore = LIST_PREV(blockToFree);
+			struct BlockMetaData *blockAfter = LIST_NEXT(blockToFree);
+			if (blockAfter!=NULL && blockAfter->is_free)   // if next block is free
 			{
-				block->size += next->size;
-				next->size=0;
-				next->is_free=0;
+				blockToFree->size += blockAfter->size;
+				blockAfter->size=0;
+				blockAfter->is_free=0;
 
-				LIST_REMOVE(&block_list, next);
+				LIST_REMOVE(&block_list, blockAfter);
 
 				//next=block;
 			}
-			if (prev!=NULL && prev->is_free)   // if prev block is free
+			if (blockBefore!=NULL && blockBefore->is_free)   // if prev block is free
 			{
-				prev->size += block->size;
-				block->size=0;
-				block->is_free=0;
-				LIST_REMOVE(&block_list, block);
+				blockBefore->size += blockToFree->size;
+				blockToFree->size=0;
+				blockToFree->is_free=0;
+				LIST_REMOVE(&block_list, blockToFree);
 			}
 
 }
