@@ -276,9 +276,6 @@ void free_block(void *va)
 	if(va ==NULL)   // if given address is pointing to null
 		    	return;
 		    struct BlockMetaData* block = ((struct BlockMetaData *) va-1);
-			if(block->is_free)   // if block is free already
-				return;
-			else// if block is occupied
 				 block->is_free =1;
 
 			struct BlockMetaData *prev = LIST_PREV(block);
@@ -313,16 +310,18 @@ void *realloc_block_FF(void* va, uint32 new_size)
 {
     //TODO: [PROJECT'23.MS1 - #8] [3] DYNAMIC ALLOCATOR - realloc_block_FF()
 
+	//please delete this comment -- i hate the sizeofmetadata >_<
 
-    //(1)handling the special cases
-    if(va >= (void*)USER_LIMIT)
-    	return (void*) new_size;
+    //if(va >= (void*)USER_LIMIT)
+    	//return (void*) new_size;
 
+	//(1)handling the special cases
     if (va == NULL)
     {
     	return alloc_block_FF(new_size); //alloc_FF(n) in case of realloc_block_FF(null, new_size), and size=0 handled in alloc
 
-     }
+    }
+
     if (new_size == 0)
     {
        free_block(va); //to free(va) in case of realloc_block_FF(va,0)
@@ -334,16 +333,13 @@ void *realloc_block_FF(void* va, uint32 new_size)
 
 
 	// Get the current block's metadata
-
 	struct BlockMetaData *block = ((struct BlockMetaData *)va - 1);
 
 
 	//(2) Check if the new size is smaller than the current size
-
 	if (new_size <= block->size)
 	{
-		// Update the  block's size
-
+	   // Update the  block's size
 	   shrink_block(block, new_size+sizeOfMetaData());
 	   struct BlockMetaData *next = LIST_NEXT(block);
 	   free_block(next);
@@ -352,24 +348,27 @@ void *realloc_block_FF(void* va, uint32 new_size)
 
 	//(3) Check if the new size is larger than current
 	//NEW size without meta
-	uint32 additional_size = new_size - block->size - sizeOfMetaData();
+	uint32 additional_size = new_size - block->size;// - sizeOfMetaData();
 
 	struct BlockMetaData *next = LIST_NEXT(block);
 	if (next != NULL && next->is_free){
 		//(3.1)Check if there's sufficient free space right in front of block
-		if(next->size +sizeOfMetaData() >= additional_size)
+		//the size of metadata is needed to save next info we <<<CANT>>> get rid of it
+		if(next->size - sizeOfMetaData() >= additional_size)
 		{
 			shrink_block(next, additional_size);
 			block->size = new_size+sizeOfMetaData();
-			next -> size=0;
+			next->size=0;
 			next->is_free=0;
-			LIST_REMOVE(&block_list, next);
+			//free the other split of the next block
 			free_block(LIST_NEXT(next));
+			//remove the next block from the block_list, but its still somewhere in the memory
+			LIST_REMOVE(&block_list, next);
 			// Resize the current block
 			return va;
 		}
-
 	}
+
 	//(3.2)Check if there's a sufficient free block anywhere in the list
 	return alloc_block_FF(new_size);
 }
