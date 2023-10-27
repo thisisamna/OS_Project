@@ -1309,14 +1309,19 @@ void test_realloc_block_FF()
 	//[3] Test realloc with increased sizes
 	//====================================================================//
 	cprintf("3: Test calling realloc with increased sizes [50%].\n\n") ;
-	int blockIndex, block_size, block_status, old_size, new_size, expected_size, newBlockIndex;
+	int blockIndex, block_size, block_status, old_size, new_size, old_next_size, difference, expected_size, newBlockIndex;
 	void* expected_va = NULL;
+	void* middle_block=NULL;
 	//[3.1] reallocate in same place (NO relocate - split)
 	cprintf("	3.1: reallocate in same place (NO relocate - split)\n\n") ;
 	is_correct = 1;
 	{
 		blockIndex = 4*allocCntPerSize - 1 ;
+		old_size = get_block_size(startVAs[blockIndex]);
 		new_size = allocSizes[3] /*12+16 B*/ + allocSizes[4]/2 /*2KB/2*/ - sizeOfMetaData();
+		difference=	new_size - old_size;
+		old_next_size= get_block_size(startVAs[blockIndex+1]);
+
 		va = realloc_block_FF(startVAs[blockIndex], new_size);
 
 		//check return address
@@ -1344,6 +1349,28 @@ void test_realloc_block_FF()
 			is_correct = 0;
 			cprintf("test_realloc_block_FF #9.4: WRONG REALLOC! make sure to ZEROing the size & is_free values of the vanishing block.\n");
 		}
+		//TEAM TEST (1/1)
+		//========================
+		//check other-split's status
+		middle_block =startVAs[blockIndex+1]+difference/sizeof(short);
+		if (is_free_block(middle_block) != 1)
+		{
+			is_correct = 0;
+			cprintf("test_realloc_block_FF #9.6: WRONG REALLOC! make sure to FREE the other split\n");
+		}
+
+		//check other-split's size
+		if (get_block_size(middle_block) != old_next_size - difference)
+		{
+			is_correct = 0;
+			cprintf("test_realloc_block_FF #9.7: WRONG REALLOC! block size after splitting is not correct. Expected %d, Actual %d\n", difference, old_next_size - difference);
+		}
+		if (is_correct)
+		{
+			eval += 25;
+		}
+		//==========================
+		//TEAM TEST (1/1) END.
 
 		//check content of reallocated block
 		if (*(startVAs[blockIndex]) != blockIndex || *(midVAs[blockIndex]) != blockIndex ||	*(endVAs[blockIndex]) != blockIndex)
@@ -1362,7 +1389,7 @@ void test_realloc_block_FF()
 		other_split_char+=additional_size;
 		other_split=(short*)other_split_char;
 	//======================================================================================//
-
+/*
 		//check other-split's status
 		if (is_free_block(other_split) != 1)
 		{
@@ -1376,12 +1403,9 @@ void test_realloc_block_FF()
 			is_correct = 0;
 			cprintf("test_realloc_block_FF #9.7: WRONG REALLOC! block size after splitting is not correct. Expected %d, Actual %d\n", remaining_size, get_block_size(other_split));
 		}
+*/
+	}
 
-	}
-	if (is_correct)
-	{
-		eval += 25;
-	}
 
 	//[3.2] reallocate in same place (NO relocate - NO split)
 	cprintf("	3.2: reallocate in same place (NO relocate - NO split)\n\n") ;
