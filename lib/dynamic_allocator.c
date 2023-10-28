@@ -15,6 +15,7 @@
 void shrink_block(struct BlockMetaData* oldBlock, uint32 allocatedSize) // including metadata
 {
     uint32 free_block_size=oldBlock->size-allocatedSize;
+
     if(free_block_size>=sizeOfMetaData())
     {
     struct BlockMetaData* free_block = oldBlock;
@@ -24,9 +25,13 @@ void shrink_block(struct BlockMetaData* oldBlock, uint32 allocatedSize) // inclu
         free_block->size= free_block_size;
         free_block->is_free=1;
         LIST_INSERT_AFTER(&block_list, oldBlock, free_block);
+        oldBlock->is_free=0;
+            oldBlock->size=allocatedSize;
     }
-    oldBlock->is_free=0;
-    oldBlock->size=allocatedSize;
+    if(free_block_size<sizeOfMetaData()){
+    	 oldBlock->is_free=0;
+    }
+
 }
 
 uint32* findMinimum(uint32* arr[], int size) {
