@@ -128,11 +128,11 @@ void initialize_dynamic_allocator(uint32 daStart, uint32 initSizeOfAllocatedSpac
 	//TODO: [PROJECT'23.MS1 - #5] [3] DYNAMIC ALLOCATOR - initialize_dynamic_allocator()
 	LIST_INIT(&block_list);
 
-	struct BlockMetaData* block = (struct BlockMetaData *) daStart;
-	block->size= initSizeOfAllocatedSpace;;
-	block->is_free=1;
+	struct BlockMetaData* initBlock = (struct BlockMetaData *) daStart;
+	initBlock->size= initSizeOfAllocatedSpace;;
+	initBlock->is_free=1;
 
-	LIST_INSERT_HEAD(&block_list, block);
+	LIST_INSERT_HEAD(&block_list, initBlock);
 
 }
 
@@ -145,27 +145,27 @@ void *alloc_block_FF(uint32 size)
     //panic("alloc_block_FF is not implemented yet");
     if(size==0)
         return NULL;
-    struct BlockMetaData* block;
+    struct BlockMetaData* blockInList;
     size += sizeOfMetaData();
-    LIST_FOREACH(block, &block_list)
+    LIST_FOREACH(blockInList, &block_list)
     {
-        if(block->is_free)
+        if(blockInList->is_free)
         {
-            if(size > block->size)
+            if(size > blockInList->size)
             {
                 continue;
             }
-            else if(size < block->size)
+            else if(size < blockInList->size)
             {
-            	shrink_block(block, size);
+            	shrink_block(blockInList, size);
 
-                return ++block;
+                return ++blockInList;
             }
 
-            else if(size == block->size)
+            else if(size == blockInList->size)
                 {
-                    block->is_free=0;
-                    return ++block;
+            	blockInList->is_free=0;
+                    return ++blockInList;
 
                 }
 
@@ -181,7 +181,7 @@ void *alloc_block_FF(uint32 size)
         //returns old sbreak, add block there
         old_sbrk->size= size;
         old_sbrk->is_free=1;
-        LIST_INSERT_AFTER(&block_list, block, old_sbrk);
+        LIST_INSERT_AFTER(&block_list, blockInList, old_sbrk); //blockInList is now the last block in the list
         return ++old_sbrk;
     }
 }
@@ -195,7 +195,7 @@ void *alloc_block_BF(uint32 size)
 	if(size==0)
 	return NULL;
 	size += sizeOfMetaData();
-	struct BlockMetaData* block;
+	struct BlockMetaData* blockInList;
 	//LIST_FOREACH(block, &block_list){
 	//In Case the size = block.size exactly
 		//if(size==block->size){
@@ -209,14 +209,14 @@ void *alloc_block_BF(uint32 size)
 	//uint32* arr[BlkListsize];
 	uint32 mindiff=UINT_MAX;
 	struct BlockMetaData* point = NULL;
-     LIST_FOREACH(block, &block_list){
-	 if(block->size >= size && block->is_free){
-		 if (((block->size)-size)<mindiff){
-			 point=block;
-			 mindiff=(block->size)-size;
+     LIST_FOREACH(blockInList, &block_list){
+	 if(blockInList->size >= size && blockInList->is_free){
+		 if (((blockInList->size)-size)<mindiff){
+			 point=blockInList;
+			 mindiff=(blockInList->size)-size;
 			 if(mindiff==0){
-				 block->is_free=0;
-				return ++block;
+				 blockInList->is_free=0;
+				return ++blockInList;
 			 }
 
 		 }
@@ -243,7 +243,7 @@ void *alloc_block_BF(uint32 size)
              //returns old sbreak, add block there
              old_sbrk->size= size;
              old_sbrk->is_free=1;
-             LIST_INSERT_AFTER(&block_list, block, old_sbrk);
+             LIST_INSERT_AFTER(&block_list, blockInList, old_sbrk);
              return ++old_sbrk;
          }
 }
@@ -275,30 +275,27 @@ void free_block(void *va)
 	//panic("free_block is not implemented yet");
 	if(va ==NULL)   // if given address is pointing to null
 		    	return;
-		    struct BlockMetaData* block = ((struct BlockMetaData *) va-1);
-			if(block->is_free)   // if block is free already
-				return;
-			else// if block is occupied
-				 block->is_free =1;
+		    struct BlockMetaData* blockToFree = ((struct BlockMetaData *) va-1);
+		    blockToFree->is_free =1;
 
-			struct BlockMetaData *prev = LIST_PREV(block);
-			struct BlockMetaData *next = LIST_NEXT(block);
-			if (next!=NULL && next->is_free)   // if next block is free
+			struct BlockMetaData *blockBefore = LIST_PREV(blockToFree);
+			struct BlockMetaData *blockAfter = LIST_NEXT(blockToFree);
+			if (blockAfter!=NULL && blockAfter->is_free)   // if next block is free
 			{
-				block->size += next->size;
-				next->size=0;
-				next->is_free=0;
+				blockToFree->size += blockAfter->size;
+				blockAfter->size=0;
+				blockAfter->is_free=0;
 
-				LIST_REMOVE(&block_list, next);
+				LIST_REMOVE(&block_list, blockAfter);
 
 				//next=block;
 			}
-			if (prev!=NULL && prev->is_free)   // if prev block is free
+			if (blockBefore!=NULL && blockBefore->is_free)   // if prev block is free
 			{
-				prev->size += block->size;
-				block->size=0;
-				block->is_free=0;
-				LIST_REMOVE(&block_list, block);
+				blockBefore->size += blockToFree->size;
+				blockToFree->size=0;
+				blockToFree->is_free=0;
+				LIST_REMOVE(&block_list, blockToFree);
 			}
 
 }
@@ -312,21 +309,19 @@ void free_block(void *va)
 void *realloc_block_FF(void* va, uint32 new_size)
 {
     //TODO: [PROJECT'23.MS1 - #8] [3] DYNAMIC ALLOCATOR - realloc_block_FF()
-<<<<<<< HEAD
-	struct BlockMetaData *block = ((struct BlockMetaData *)va - 1);
-	struct BlockMetaData *next = LIST_NEXT(block);
-	uint32 difference = new_size - block->size;
-=======
 
-    uint32 original_size = get_block_size(va);
->>>>>>> 562ca2cba3060356451de99d92219599433beecc
+	//please delete this comment -- i hate the sizeofmetadata >_<
 
-    //(1)handling the special cases
+    //if(va >= (void*)USER_LIMIT)
+    	//return (void*) new_size;
+
+	//(1)handling the special cases
     if (va == NULL)
     {
     	return alloc_block_FF(new_size); //alloc_FF(n) in case of realloc_block_FF(null, new_size), and size=0 handled in alloc
 
-     }
+    }
+
     if (new_size == 0)
     {
        free_block(va); //to free(va) in case of realloc_block_FF(va,0)
@@ -334,80 +329,47 @@ void *realloc_block_FF(void* va, uint32 new_size)
     }
 
 
-<<<<<<< HEAD
-    if (new_size < (block->size - sizeOfMetaData()))
-=======
+
+
 
 	// Get the current block's metadata
-
-	struct BlockMetaData *block = ((struct BlockMetaData *)va - 1);
+	struct BlockMetaData *blockToReallocate = ((struct BlockMetaData *)va - 1);
 
 
 	//(2) Check if the new size is smaller than the current size
-
-	if (new_size <= block->size)
->>>>>>> 562ca2cba3060356451de99d92219599433beecc
+	if (new_size <= blockToReallocate->size)
 	{
-		// Update the  block's size
-
-	   shrink_block(block, new_size+sizeOfMetaData());
-		struct BlockMetaData *next = LIST_NEXT(block);
-		free_block(next);
-<<<<<<< HEAD
-		return va;
-	}
-
-	else if(new_size==(block->size - sizeOfMetaData()))
-	{
-		return va;
-	}
-
-	else if (new_size>(block->size - sizeOfMetaData()))
-	{
-		if(next!=NULL && next->is_free)
-=======
-		/*if (next!=NULL && next->is_free)   // if next block is free
->>>>>>> 562ca2cba3060356451de99d92219599433beecc
-		{
-			//block->size += next->size;
-			next->size=0;
-			next->is_free=0;
-
-			//LIST_REMOVE(&block_list, next);
-
-			//next=block;
-		}*/
-
-
+	   // Update the  block's size
+	   shrink_block(blockToReallocate, new_size+sizeOfMetaData());
+	   struct BlockMetaData *freeMiniBlock = LIST_NEXT(blockToReallocate);
+	   free_block(freeMiniBlock); //so that it merges if there is a free block after it
 	   return va;
 	}
 
 	//(3) Check if the new size is larger than current
 	//NEW size without meta
-	uint32 additional_size = new_size - block->size - sizeOfMetaData();
+	uint32 additional_size = new_size - blockToReallocate->size;// - sizeOfMetaData();
 
-	struct BlockMetaData *next = LIST_NEXT(block);
-	if (next != NULL && next->is_free){
+	struct BlockMetaData *blockAfter = LIST_NEXT(blockToReallocate);
+	if (blockAfter != NULL && blockAfter->is_free){
 		//(3.1)Check if there's sufficient free space right in front of block
-		if(next->size +sizeOfMetaData() >= additional_size)
+		//the size of metadata is needed to save next info we <<<CANT>>> get rid of it
+		if(blockAfter->size - sizeOfMetaData() >= additional_size)
 		{
-			shrink_block(next, additional_size);
-			block->size = new_size+sizeOfMetaData();
-			next -> size=0;
-			next->is_free=0;
-			LIST_REMOVE(&block_list, next);
-			free_block(LIST_NEXT(next));
+			shrink_block(blockAfter, additional_size);
+			blockToReallocate->size = new_size+sizeOfMetaData();
+			blockAfter->size=0;
+			blockAfter->is_free=0;
+			//free the other split of the next block
+			free_block(LIST_NEXT(blockAfter)); //newly freed block
+			//remove the next block from the block_list, but its still somewhere in the memory
+			LIST_REMOVE(&block_list, blockAfter);
 			// Resize the current block
 			return va;
 		}
-
 	}
-<<<<<<< HEAD
 
-    //return alloc_block_FF(new_size);
-=======
 	//(3.2)Check if there's a sufficient free block anywhere in the list
 	return alloc_block_FF(new_size);
->>>>>>> 562ca2cba3060356451de99d92219599433beecc
 }
 
