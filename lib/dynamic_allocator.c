@@ -18,19 +18,16 @@ void shrink_block(struct BlockMetaData* oldBlock, uint32 allocatedSize) // inclu
 
     if(free_block_size>=sizeOfMetaData())
     {
-    struct BlockMetaData* free_block = oldBlock;
-    char* free_block_char=(char*)free_block;
-    free_block_char+=allocatedSize;
-    free_block=(struct BlockMetaData*)free_block_char;
+		struct BlockMetaData* free_block = oldBlock;
+		char* free_block_char=(char*)free_block;
+		free_block_char+=allocatedSize;
+		free_block=(struct BlockMetaData*)free_block_char;
         free_block->size= free_block_size;
         free_block->is_free=1;
         LIST_INSERT_AFTER(&block_list, oldBlock, free_block);
-        oldBlock->is_free=0;
-            oldBlock->size=allocatedSize;
-    }
-    if(free_block_size<sizeOfMetaData()){
-    	 oldBlock->is_free=0;
-    }
+		oldBlock->size=allocatedSize;
+    }//else leave block size as it is, which includes the small free bit (internal frag)
+    	oldBlock->is_free=0;
 
 }
 
