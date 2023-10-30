@@ -114,6 +114,7 @@ void print_blocks_list(struct MemBlock_LIST list)
 //==================================================================================//
 //============================ REQUIRED FUNCTIONS ==================================//
 //==================================================================================//
+bool is_initialized =0;
 
 //==================================
 // [1] INITIALIZE DYNAMIC ALLOCATOR:
@@ -124,6 +125,7 @@ void initialize_dynamic_allocator(uint32 daStart, uint32 initSizeOfAllocatedSpac
 	//DON'T CHANGE THESE LINES=================
 	if (initSizeOfAllocatedSpace == 0)
 		return ;
+	is_initialized=1;
 	//=========================================
 	//=========================================
 
@@ -147,6 +149,15 @@ void *alloc_block_FF(uint32 size)
     //panic("alloc_block_FF is not implemented yet");
     if(size==0)
         return NULL;
+    if (!is_initialized)
+    {
+    uint32 required_size = size + sizeOfMetaData();
+    uint32 da_start = (uint32)sbrk(required_size);
+    //get new break since it's page aligned! thus, the size can be more than the required one
+    uint32 da_break = (uint32)sbrk(0);
+    initialize_dynamic_allocator(da_start, da_break - da_start);
+    }
+
     struct BlockMetaData* blockInList;
     size += sizeOfMetaData();
     LIST_FOREACH(blockInList, &block_list)
