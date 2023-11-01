@@ -49,10 +49,22 @@ void* kmalloc(unsigned int size)
 	//TODO: [PROJECT'23.MS2 - #03] [1] KERNEL HEAP - kmalloc()
 	//refer to the project presentation and documentation for details
 	// use "isKHeapPlacementStrategyFIRSTFIT() ..." functions to check the current strategy
+	if(!isKHeapPlacementStrategyFIRSTFIT())
+		return NULL; //don't know what else to do lol
+	void* allocated= NULL;
+	if(size<=DYN_ALLOC_MAX_BLOCK_SIZE) //block allocator
+	{
+		allocated = alloc_block_FF(size);
+	}
+	else //page allocator
+	{
+
+	}
+
 
 	//change this "return" according to your answer
 	kpanic_into_prompt("kmalloc() is not implemented yet...!!");
-	return NULL;
+	return allocated;
 }
 
 void kfree(void* virtual_address)
