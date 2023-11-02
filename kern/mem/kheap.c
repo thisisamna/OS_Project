@@ -18,19 +18,37 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 	//Comment the following line(s) before start coding...
 	//panic("not implemented yet");
 
-	/*Initialization*/
-	Start = daStart;
+	/*Requirement 1: Initialization*/
+	start = daStart;
+	segment_break = initSizeToAllocate;
+	hard_limit = daLimit;
+
+	//TODO handle this case: "if no memory found" ???
+	if(initSizeToAllocate > daLimit)
+		return E_NO_MEM;
 
 
-	if(initSizeToAllocate <= DYN_ALLOC_MAX_BLOCK_SIZE)
-	{
-		//initialize_dynamic_allocator()
-	}
 	else
 	{
+		/*Requirement 3: Call initialize_dynamic_allocator*/
+	 	initialize_dynamic_allocator(start, segment_break);
 
+		struct FrameInfo *frame;
+		uint32 i;
+		for(i = 0; i<segment_break; i+(2*kilo))
+		{
+			frame = NULL;
+			int allocated = allocate_frame(&frame);
+
+			if(!allocated)
+				return E_NO_MEM;
+
+			map_frame(ptr_page_directory, frame,  i, PERM_PRESENT);
+
+		}
+		return 0;
 	}
-	return 0;
+
 }
 
 void* sbrk(int increment)
