@@ -16,7 +16,20 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 	//	Otherwise (if no memory OR initial size exceed the given limit): E_NO_MEM
 
 	//Comment the following line(s) before start coding...
-	panic("not implemented yet");
+	//panic("not implemented yet");
+
+	/*Initialization*/
+	Start = daStart;
+
+
+	if(initSizeToAllocate <= DYN_ALLOC_MAX_BLOCK_SIZE)
+	{
+		//initialize_dynamic_allocator()
+	}
+	else
+	{
+
+	}
 	return 0;
 }
 
