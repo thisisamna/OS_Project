@@ -23,31 +23,31 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 	segment_break = initSizeToAllocate;
 	hard_limit = daLimit;
 
-	//TODO handle this case: "if no memory found" ???
+	//handle: "if no memory found" ???
 	if(initSizeToAllocate > daLimit)
 		return E_NO_MEM;
 
 
-	else
-	{
-		/*Requirement 3: Call initialize_dynamic_allocator*/
-	 	initialize_dynamic_allocator(start, segment_break);
-
-		struct FrameInfo *frame;
+	 	/*Requirement 2: All pages within space should be allocated and mapped*/
 		uint32 i;
-		for(i = 0; i<segment_break; i+(2*kilo))
+		for(i = 0; i<initSizeToAllocate; i+(2*kilo))
 		{
+			//dr said the page table is already created
+			//uint32 *ptr_page_table = NULL;
+			//int created = get_page_table(ptr_page_directory, i, &ptr_page_table);
+
+			struct FrameInfo *frame;
 			frame = NULL;
 			int allocated = allocate_frame(&frame);
-
-			if(!allocated)
-				return E_NO_MEM;
-
-			map_frame(ptr_page_directory, frame,  i, PERM_PRESENT);
-
+			int mapped = map_frame(ptr_page_directory, frame,  i, PERM_PRESENT);
 		}
-		return 0;
-	}
+
+
+		/*Requirement 3: Call initialize_dynamic_allocator*/
+	 	initialize_dynamic_allocator(0, initSizeToAllocate);
+	 	cprintf("\n ugh i dont get it, Trap but why\n");
+	return 0;
+
 
 }
 
