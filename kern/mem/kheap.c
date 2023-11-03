@@ -20,27 +20,29 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 
 	/*Requirement 1: Initialization*/
 	start = daStart;
-	segment_break = start+initSizeToAllocate;
+	segment_break = daStart +initSizeToAllocate;
 	hard_limit = daLimit;
 
 	//handle: "if no memory found" ???
 	if(initSizeToAllocate > daLimit - daStart)
 		return E_NO_MEM;
 
-
 	/*Requirement 2: All pages within space should be allocated and mapped*/
 
 	uint32 page;
 	struct FrameInfo *frame;
-	for(page = daStart; page<segment_break; page+=PAGE_SIZE)
+	for(page = daStart; page<segment_break;page+=PAGE_SIZE)
 	{
+
 		allocate_frame(&frame);
-		map_frame(ptr_page_directory, frame,  page, PERM_PRESENT);
+		map_frame(ptr_page_directory, frame,  page, PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
+
 	}
 
 
 	/*Requirement 3: Call initialize_dynamic_allocator*/
 	initialize_dynamic_allocator(daStart, initSizeToAllocate);
+
 	return 0;
 
 

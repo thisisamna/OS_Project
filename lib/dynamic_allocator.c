@@ -124,7 +124,7 @@ void initialize_dynamic_allocator(uint32 daStart, uint32 initSizeOfAllocatedSpac
 	//=========================================
 	//DON'T CHANGE THESE LINES=================
 	if (initSizeOfAllocatedSpace == 0)
-		return ;
+		return;
 	is_initialized=1;
 	//=========================================
 	//=========================================
