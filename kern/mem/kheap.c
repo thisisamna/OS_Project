@@ -58,15 +58,29 @@ void* kmalloc(unsigned int size)
 	}
 	else //page allocator
 	{
+		int numOfPages = ROUNDUP(size,PAGE_SIZE);
+		struct Frame_Info* frame;
 
+		for(int i =0; i<numOfPages;i++)
+		{
+		/*allocate_frame(&frame);
+		for(i=HARD_LIMIT+PAGE_SIZE; i<KERNEL_HEAP_MAX; i+PAGE_SIZE)//khokho will declare
+		{
+			get_frame_info()
+		}*/
+		/*
+		map_frame(frame, va, PERM_WRITEABLE); //correct permission for kernel?
+
+		}
+		*/
+
+		}
 	}
 
-
 	//change this "return" according to your answer
-	kpanic_into_prompt("kmalloc() is not implemented yet...!!");
+	//kpanic_into_prompt("kmalloc() is not implemented yet...!!");
 	return allocated;
 }
-
 void kfree(void* virtual_address)
 {
 	//TODO: [PROJECT'23.MS2 - #04] [1] KERNEL HEAP - kfree()
