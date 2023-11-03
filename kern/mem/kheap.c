@@ -42,7 +42,6 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 
 	/*Requirement 3: Call initialize_dynamic_allocator*/
 	initialize_dynamic_allocator(daStart, initSizeToAllocate);
-
 	return 0;
 
 
@@ -83,22 +82,39 @@ void* kmalloc(unsigned int size)
 	if(size<=DYN_ALLOC_MAX_BLOCK_SIZE) //block allocator
 	{
 		allocated = alloc_block_FF(size);
+
 	}
 	else //page allocator
 	{
 		int numOfPages = ROUNDUP(size,PAGE_SIZE);
-		struct Frame_Info* frame;
-
-		for(int i =0; i<numOfPages;i++)
+		int foundPages =0;
+		struct FrameInfo *frame;
+		struct ptr_page_table *freePage;
+		uint32 page;
+		uint32 *ptr_page_table;
+		for(page = KERNEL_HEAP_START; page<KERNEL_HEAP_MAX;page+=PAGE_SIZE)
 		{
-		/*allocate_frame(&frame);
-		for(i=HARD_LIMIT+PAGE_SIZE; i<KERNEL_HEAP_MAX; i+PAGE_SIZE)//khokho will declare
+			//problems start here, rest seems fine
+			if(get_frame_info(ptr_page_directory, page, &ptr_page_table)==0)
+			{
+				foundPages++;
+				if(foundPages==numOfPages)
+				{
+					page -= (numOfPages-1)*PAGE_SIZE;
+					break;
+				}
+			}
+		}
+
+		if(foundPages!=numOfPages)
 		{
-			get_frame_info()
-		}*/
-
-
-
+			return NULL;
+		}
+		allocated = (void*)page;
+		for(int i=0; i<numOfPages;i++,page+=PAGE_SIZE)
+		{
+			allocate_frame(&frame);
+			map_frame(ptr_page_directory,frame,page,PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
 		}
 	}
 
