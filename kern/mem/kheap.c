@@ -20,32 +20,27 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 
 	/*Requirement 1: Initialization*/
 	start = daStart;
-	segment_break = initSizeToAllocate;
+	segment_break = start+initSizeToAllocate;
 	hard_limit = daLimit;
 
 	//handle: "if no memory found" ???
-	if(initSizeToAllocate > daLimit)
+	if(initSizeToAllocate > daLimit - daStart)
 		return E_NO_MEM;
 
 
-	 	/*Requirement 2: All pages within space should be allocated and mapped*/
-		uint32 i;
-		for(i = 0; i<initSizeToAllocate; i+(2*kilo))
-		{
-			//dr said the page table is already created
-			//uint32 *ptr_page_table = NULL;
-			//int created = get_page_table(ptr_page_directory, i, &ptr_page_table);
+	/*Requirement 2: All pages within space should be allocated and mapped*/
 
-			struct FrameInfo *frame;
-			frame = NULL;
-			int allocated = allocate_frame(&frame);
-			int mapped = map_frame(ptr_page_directory, frame,  i, PERM_PRESENT);
-		}
+	uint32 page;
+	struct FrameInfo *frame;
+	for(page = daStart; page<segment_break; page+=PAGE_SIZE)
+	{
+		allocate_frame(&frame);
+		map_frame(ptr_page_directory, frame,  page, PERM_PRESENT);
+	}
 
 
-		/*Requirement 3: Call initialize_dynamic_allocator*/
-	 	initialize_dynamic_allocator(0, initSizeToAllocate);
-	 	cprintf("\n ugh i dont get it, Trap but why\n");
+	/*Requirement 3: Call initialize_dynamic_allocator*/
+	initialize_dynamic_allocator(daStart, initSizeToAllocate);
 	return 0;
 
 
@@ -74,9 +69,9 @@ void* sbrk(int increment)
 	panic("not implemented yet");
 }
 
-
 void* kmalloc(unsigned int size)
 {
+
 	//TODO: [PROJECT'23.MS2 - #03] [1] KERNEL HEAP - kmalloc()
 	//refer to the project presentation and documentation for details
 	// use "isKHeapPlacementStrategyFIRSTFIT() ..." functions to check the current strategy
@@ -99,19 +94,18 @@ void* kmalloc(unsigned int size)
 		{
 			get_frame_info()
 		}*/
-		/*
-		map_frame(frame, va, PERM_WRITEABLE); //correct permission for kernel?
 
-		}
-		*/
+
 
 		}
 	}
 
 	//change this "return" according to your answer
-	//kpanic_into_prompt("kmalloc() is not implemented yet...!!");
+	//panic_into_prompt("kmalloc() is not implemented yet...!!");
 	return allocated;
+
 }
+
 void kfree(void* virtual_address)
 {
 	//TODO: [PROJECT'23.MS2 - #04] [1] KERNEL HEAP - kfree()
