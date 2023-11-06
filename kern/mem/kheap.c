@@ -99,19 +99,22 @@ void* kmalloc(unsigned int size)
 
 	else //page allocator
 	{
+		uint32 va;
 		for(uint32 i = 0; i<numOfPages; i++)
 		{
 				frame = NULL;
 				int is_allocated = allocate_frame(&frame);
 				if(is_allocated == 0)
 				{
-					int is_mapped = map_frame(ptr_page_directory, frame,  (hard_limit + PAGE_SIZE + (i*PAGE_SIZE)), PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
+					va = (hard_limit + PAGE_SIZE + (i*PAGE_SIZE));
+					int is_mapped = map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
 					if(is_mapped == 0)
 					{
 						num_of_frames++;
 						if(num_of_frames == 1)
 						{
-							 pa = to_physical_address(frame);
+							 //pa = to_physical_address(frame);
+							 allocated = (void*) va;
 
 						}
 					}
@@ -119,7 +122,7 @@ void* kmalloc(unsigned int size)
 
 
 		}
-		allocated = to_frame_info(pa); //hey google cast this & retrun it
+		//allocated = to_frame_info(pa); //hey google cast this & retrun it
 	}
 
 
