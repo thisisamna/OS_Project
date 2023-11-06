@@ -77,15 +77,20 @@ void* kmalloc(unsigned int size)
 	//refer to the project presentation and documentation for details
 	// use "isKHeapPlacementStrategyFIRSTFIT() ..." functions to check the current strategy
 
-	//if(size >= (KERNEL_HEAP_MAX - (hard_limit + PAGE_SIZE)))
-				//	return NULL;
+	if(size >= (KERNEL_HEAP_MAX - (hard_limit + PAGE_SIZE)))
+		return NULL;
 
+<<<<<<< HEAD
 	int is_allocated;
 	int is_mapped;
 	int numOfPages = ROUNDUP(size,PAGE_SIZE);
+=======
+	int numOfPages = (ROUNDUP(size,PAGE_SIZE))/PAGE_SIZE;
+>>>>>>> 2ba784832f1e4ee722ecc06484fd80881b67e6b0
 	int num_of_frames = 0;
 	uint32 pa = 0;
-	struct FrameInfo *frame;
+	uint32 *ptr_page_table;
+	struct FrameInfo *frame =NULL;
 
 
 	if(!isKHeapPlacementStrategyFIRSTFIT())
@@ -100,23 +105,57 @@ void* kmalloc(unsigned int size)
 
 	else //page allocator
 	{
+		uint32 va;
 		for(uint32 i = 0; i<numOfPages; i++)
 		{
+<<<<<<< HEAD
 				frame = NULL;
 				is_allocated = allocate_frame(&frame);
 				if(is_allocated == 0)
 				{
 					is_mapped = map_frame(ptr_page_directory, frame,  (hard_limit + PAGE_SIZE + (i*PAGE_SIZE)), PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
+=======
+				if(frame==NULL)
+					allocate_frame(&frame);
+				if(frame!=NULL)
+				{
+					va = (hard_limit + PAGE_SIZE + (i*PAGE_SIZE));
+					int is_mapped = (int)get_frame_info(ptr_page_directory, va, &ptr_page_table);
+>>>>>>> 2ba784832f1e4ee722ecc06484fd80881b67e6b0
 					if(is_mapped == 0)
 					{
+						map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
 						num_of_frames++;
+						frame = NULL;
 						if(num_of_frames == 1)
+<<<<<<< HEAD
 							allocated = (void*)(hard_limit + PAGE_SIZE + (i*PAGE_SIZE));
 					}
 					else cprintf("not mapped");
+=======
+						{
+							 //pa = to_physical_address(frame);
+							 allocated = (void*) va;
+
+						}
+					}
+					else
+					{
+						num_of_frames=0;
+						allocated=NULL;
+					}
+>>>>>>> 2ba784832f1e4ee722ecc06484fd80881b67e6b0
 				}
 		}
+<<<<<<< HEAD
 		//allocated = (void *) va; //hey google cast this & retrun it
+=======
+		if(numOfPages!=num_of_frames)
+		{
+			return NULL;
+		}
+		//allocated = to_frame_info(pa); //hey google cast this & retrun it
+>>>>>>> 2ba784832f1e4ee722ecc06484fd80881b67e6b0
 	}
 
 	//cprintf("\nnumber of pages: %d and number of frames: %d\n", numOfPages,num_of_frames);
