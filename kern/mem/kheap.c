@@ -80,7 +80,7 @@ void* kmalloc(unsigned int size)
 	//if(size >= (KERNEL_HEAP_MAX - (hard_limit + PAGE_SIZE)))
 				//	return NULL;
 
-	int numOfPages = ROUNDUP(size,PAGE_SIZE);
+	int numOfPages = (ROUNDUP(size,PAGE_SIZE))/PAGE_SIZE;
 	int num_of_frames = 0;
 	uint32 pa = 0;
 	struct FrameInfo *frame;
