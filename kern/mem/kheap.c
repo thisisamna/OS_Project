@@ -80,6 +80,8 @@ void* kmalloc(unsigned int size)
 	//if(size >= (KERNEL_HEAP_MAX - (hard_limit + PAGE_SIZE)))
 				//	return NULL;
 
+	int is_allocated;
+	int is_mapped;
 	int numOfPages = ROUNDUP(size,PAGE_SIZE);
 	int num_of_frames = 0;
 	uint32 pa = 0;
@@ -96,37 +98,28 @@ void* kmalloc(unsigned int size)
 		allocated = alloc_block_FF(size);
 	}
 
-
 	else //page allocator
 	{
 		for(uint32 i = 0; i<numOfPages; i++)
 		{
 				frame = NULL;
-				int is_allocated = allocate_frame(&frame);
+				is_allocated = allocate_frame(&frame);
 				if(is_allocated == 0)
 				{
-					int is_mapped = map_frame(ptr_page_directory, frame,  (hard_limit + PAGE_SIZE + (i*PAGE_SIZE)), PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
+					is_mapped = map_frame(ptr_page_directory, frame,  (hard_limit + PAGE_SIZE + (i*PAGE_SIZE)), PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
 					if(is_mapped == 0)
 					{
 						num_of_frames++;
 						if(num_of_frames == 1)
-						{
-							 pa = to_physical_address(frame);
-
-						}
+							allocated = (void*)(hard_limit + PAGE_SIZE + (i*PAGE_SIZE));
 					}
+					else cprintf("not mapped");
 				}
-
-
 		}
-		allocated = to_frame_info(pa); //hey google cast this & retrun it
+		//allocated = (void *) va; //hey google cast this & retrun it
 	}
 
-
-
-	cprintf("\nnumber of pages: %d and number of frames: %d\n", numOfPages,num_of_frames);
-
-
+	//cprintf("\nnumber of pages: %d and number of frames: %d\n", numOfPages,num_of_frames);
 	//change this "return" according to your answer
 	//panic_into_prompt("kmalloc() is not implemented yet...!!");
 	return allocated;

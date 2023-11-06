@@ -2635,7 +2635,6 @@ int test_kheap_virt_addr()
 	uint32 allocatedSpace = (13*Mega + 24*kilo + (INITIAL_KHEAP_ALLOCATIONS));
 	uint32 allPAs[allocatedSpace/PAGE_SIZE] ;
 	int numOfFrames = allocatedSpace/PAGE_SIZE ;
-
 	//test kheap_virtual_address after kmalloc only [20%]
 	{
 		uint32 va;
