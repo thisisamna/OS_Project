@@ -68,9 +68,9 @@ int test_kmalloc()
 		int freeDiskFrames = pf_calculate_free_frames() ;
 		uint32 sizeOfKHeap = (KERNEL_HEAP_MAX - ACTUAL_START + 1) ;
 		ptr_allocations[0] = kmalloc(sizeOfKHeap);
-//		if (ptr_allocations[0] != NULL) panic("Allocating insufficient space: should return NULL");
-//		if ((pf_calculate_free_frames() - freeDiskFrames) != 0) panic("Page file is changed while it's not expected to. (pages are wrongly allocated/de-allocated in PageFile)");
-//		if ((freeFrames - sys_calculate_free_frames()) != 0) panic("Wrong allocation: pages are not loaded successfully into memory");
+		if (ptr_allocations[0] != NULL) panic("Allocating insufficient space: should return NULL");
+		if ((pf_calculate_free_frames() - freeDiskFrames) != 0) panic("Page file is changed while it's not expected to. (pages are wrongly allocated/de-allocated in PageFile)");
+		if ((freeFrames - sys_calculate_free_frames()) != 0) panic("Wrong allocation: pages are not loaded successfully into memory");
 
 		cprintf("\nkmalloc: current evaluation = 10%");
 		//2 MB
