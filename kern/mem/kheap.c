@@ -77,13 +77,14 @@ void* kmalloc(unsigned int size)
 	//refer to the project presentation and documentation for details
 	// use "isKHeapPlacementStrategyFIRSTFIT() ..." functions to check the current strategy
 
-	//if(size >= (KERNEL_HEAP_MAX - (hard_limit + PAGE_SIZE)))
-				//	return NULL;
+	if(size >= (KERNEL_HEAP_MAX - (hard_limit + PAGE_SIZE)))
+		return NULL;
 
 	int numOfPages = (ROUNDUP(size,PAGE_SIZE))/PAGE_SIZE;
 	int num_of_frames = 0;
 	uint32 pa = 0;
-	struct FrameInfo *frame;
+	uint32 *ptr_page_table;
+	struct FrameInfo *frame =NULL;
 
 
 	if(!isKHeapPlacementStrategyFIRSTFIT())
@@ -102,15 +103,17 @@ void* kmalloc(unsigned int size)
 		uint32 va;
 		for(uint32 i = 0; i<numOfPages; i++)
 		{
-				frame = NULL;
-				int is_allocated = allocate_frame(&frame);
-				if(is_allocated == 0)
+				if(frame==NULL)
+					allocate_frame(&frame);
+				if(frame!=NULL)
 				{
 					va = (hard_limit + PAGE_SIZE + (i*PAGE_SIZE));
-					int is_mapped = map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
+					int is_mapped = (int)get_frame_info(ptr_page_directory, va, &ptr_page_table);
 					if(is_mapped == 0)
 					{
+						map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
 						num_of_frames++;
+						frame = NULL;
 						if(num_of_frames == 1)
 						{
 							 //pa = to_physical_address(frame);
@@ -118,9 +121,18 @@ void* kmalloc(unsigned int size)
 
 						}
 					}
+					else
+					{
+						num_of_frames=0;
+						allocated=NULL;
+					}
 				}
 
 
+		}
+		if(numOfPages!=num_of_frames)
+		{
+			return NULL;
 		}
 		//allocated = to_frame_info(pa); //hey google cast this & retrun it
 	}
