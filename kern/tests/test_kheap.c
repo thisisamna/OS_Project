@@ -77,7 +77,7 @@ int test_kmalloc()
 		freeFrames = sys_calculate_free_frames() ;
 		freeDiskFrames = pf_calculate_free_frames() ;
 		ptr_allocations[0] = kmalloc(2*Mega-kilo);
-		if ((uint32) ptr_allocations[0] !=  (ACTUAL_START)) panic("Wrong start address for the allocated space... check return address of kmalloc & updating of heap ptr");
+		if ((uint32) ptr_allocations[0] !=  (ACTUAL_START)) panic("Wrong start address for the allocated space... check return address of kmalloc & updating of heap ptr. expected: %d. found: %d",(ACTUAL_START),  ptr_allocations[0] );
 		if ((pf_calculate_free_frames() - freeDiskFrames) != 0) panic("Page file is changed while it's not expected to. (pages are wrongly allocated/de-allocated in PageFile)");
 		if ((freeFrames - sys_calculate_free_frames()) < 512) panic("Wrong allocation: pages are not loaded successfully into memory");
 
@@ -105,7 +105,7 @@ int test_kmalloc()
 		if ((uint32) ptr_allocations[3] < KERNEL_HEAP_START || ptr_allocations[3] >= sbrk(0) || (uint32) ptr_allocations[3] >= da_limit)
 			panic("Wrong start address for the allocated space... should allocated by the dynamic allocator! check return address of kmalloc and/or sbrk");
 		if ((pf_calculate_free_frames() - freeDiskFrames) != 0) panic("Page file is changed while it's not expected to. (pages are wrongly allocated/de-allocated in PageFile)");
-		//if ((freeFrames - sys_calculate_free_frames()) != 1) panic("Wrong allocation: pages are not loaded successfully into memory");
+		if ((freeFrames - sys_calculate_free_frames()) != 1) panic("Wrong allocation: pages are not loaded successfully into memory");
 
 		//7 KB
 		freeFrames = sys_calculate_free_frames() ;

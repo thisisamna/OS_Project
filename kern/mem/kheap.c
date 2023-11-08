@@ -15,8 +15,6 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 	//	On success: 0
 	//	Otherwise (if no memory OR initial size exceed the given limit): E_NO_MEM
 
-	//Comment the following line(s) before start coding...
-	//panic("not implemented yet");
 
 	/*Requirement 1: Initialization*/
 	start = daStart;
@@ -77,9 +75,8 @@ void* kmalloc(unsigned int size)
 	// use "isKHeapPlacementStrategyFIRSTFIT() ..." functions to check the current strategy
 
 	int numOfPages = (ROUNDUP(size,PAGE_SIZE))/PAGE_SIZE;
-	int num_of_frames = 0;
-	int num_of_pages_found = 0;
-	uint32 *ptr_page_table;
+	int numOfPagesFound = 0;
+	uint32 *ptr_page_table = NULL;
 	uint32 va = 0;
 	struct FrameInfo *frame =NULL;
 	void* allocated= NULL;
@@ -87,47 +84,43 @@ void* kmalloc(unsigned int size)
 	if(!isKHeapPlacementStrategyFIRSTFIT())
 		return NULL;
 
+	//BLOCK ALLOCATOR
+	if(size<=DYN_ALLOC_MAX_BLOCK_SIZE)
+		return alloc_block_FF(size);
 
-	if(size<=DYN_ALLOC_MAX_BLOCK_SIZE) //block allocator
-		allocated = alloc_block_FF(size);
 
 
 	//check if there is sufficient space
 	for(uint32 page = (hard_limit + PAGE_SIZE); page <KERNEL_HEAP_MAX; page = (page + PAGE_SIZE))
 	{
+		ptr_page_table = NULL;
 		//if the page is not mapped
 		if(get_frame_info(ptr_page_directory, page, &ptr_page_table) == 0)
 		{
-			num_of_pages_found++;
-			if(num_of_pages_found == numOfPages)
+			numOfPagesFound++;
+			if(numOfPagesFound == numOfPages)
 			{
-				va = (page - (numOfPages*PAGE_SIZE));
+				va = (page - ((numOfPages)*PAGE_SIZE) + PAGE_SIZE);
 				allocated = (void*) va;
 				break;
 			}
 		}
 
 		else
-		{
-			ptr_page_table = NULL;
-			num_of_pages_found =0;
-		}
+			numOfPagesFound = 0;
 	}
 
-	cprintf("\nnum of page found: %d. num of pages needed: %d", num_of_pages_found, numOfPages);
-	if(num_of_pages_found < numOfPages)
+
+	if(numOfPagesFound != numOfPages)
 		return NULL;
 
-
+	//allocate and map then return va
 	for(uint32 i = 0; i<numOfPages; i++)
 	{
 		frame = NULL;
 		allocate_frame(&frame);
 		map_frame(ptr_page_directory, frame,  (va + (PAGE_SIZE * i)), PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
 	}
-
-	cprintf("\nnumber of pages: %d and number of frames: %d. size: %d\n", numOfPages,num_of_frames,size);
-
 	return allocated;
 }
 
