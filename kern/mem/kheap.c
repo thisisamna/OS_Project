@@ -76,72 +76,58 @@ void* kmalloc(unsigned int size)
 	//refer to the project presentation and documentation for details
 	// use "isKHeapPlacementStrategyFIRSTFIT() ..." functions to check the current strategy
 
-	if(!isKHeapPlacementStrategyFIRSTFIT())
-		return NULL; //don't know what else to do lol
-
-	if(size >= ((134193153))) //TEMPRORAY! JUST TO MAKE IT SHUT UP!
-		return NULL;
-
 	int numOfPages = (ROUNDUP(size,PAGE_SIZE))/PAGE_SIZE;
 	int num_of_frames = 0;
-	uint32 pa = 0;
+	int num_of_pages_found = 0;
 	uint32 *ptr_page_table;
+	uint32 va = 0;
 	struct FrameInfo *frame =NULL;
 	void* allocated= NULL;
 
-
+	if(!isKHeapPlacementStrategyFIRSTFIT())
+		return NULL;
 
 
 	if(size<=DYN_ALLOC_MAX_BLOCK_SIZE) //block allocator
-	{
 		allocated = alloc_block_FF(size);
-	}
 
-	else //page allocator
+
+	//check if there is sufficient space
+	for(uint32 page = (hard_limit + PAGE_SIZE); page <KERNEL_HEAP_MAX; page = (page + PAGE_SIZE))
 	{
-		uint32 va;
-		for(uint32 i = 0; i<numOfPages; i++)
+		//if the page is not mapped
+		if(get_frame_info(ptr_page_directory, page, &ptr_page_table) == 0)
 		{
-				frame = NULL;
-				int is_allocated = allocate_frame(&frame);
-				if(is_allocated == 0)
-				if(frame==NULL)
-					allocate_frame(&frame);
-				if(frame!=NULL)
-				{
-					va = (hard_limit + PAGE_SIZE + (i*PAGE_SIZE));
-					int is_mapped = map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
-					//int is_mapped = (int)get_frame_info(ptr_page_directory, va, &ptr_page_table);
-					if(is_mapped == 0)
-					{
-						map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
-						num_of_frames++;
-						frame = NULL;
-						if(num_of_frames == 1)
-						{
-							 //pa = to_physical_address(frame);
-							 allocated = (void*) va;
-
-						}
-					}
-					else
-					{
-						num_of_frames=0;
-						allocated=NULL;
-					}
-				}
-
-
+			num_of_pages_found++;
+			if(num_of_pages_found == numOfPages)
+			{
+				va = (page - (numOfPages*PAGE_SIZE));
+				allocated = (void*) va;
+				break;
+			}
 		}
-		if(numOfPages!=num_of_frames)
+
+		else
 		{
-			return NULL;
+			ptr_page_table = NULL;
+			num_of_pages_found =0;
 		}
-		//allocated = to_frame_info(pa); //hey google cast this & retrun it
 	}
+
+	cprintf("\nnum of page found: %d. num of pages needed: %d", num_of_pages_found, numOfPages);
+	if(num_of_pages_found < numOfPages)
+		return NULL;
+
+
+	for(uint32 i = 0; i<numOfPages; i++)
+	{
+		frame = NULL;
+		allocate_frame(&frame);
+		map_frame(ptr_page_directory, frame,  (va + (PAGE_SIZE * i)), PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
+	}
+
 	cprintf("\nnumber of pages: %d and number of frames: %d. size: %d\n", numOfPages,num_of_frames,size);
-	//change this "return" according to your answer
-	//panic_into_prompt("kmalloc() is not implemented yet...!!");
+
 	return allocated;
 }
 
