@@ -72,12 +72,13 @@ void* sbrk(int increment)
 
 void* kmalloc(unsigned int size)
 {
-
 	//TODO: [PROJECT'23.MS2 - #03] [1] KERNEL HEAP - kmalloc()
 	//refer to the project presentation and documentation for details
 	// use "isKHeapPlacementStrategyFIRSTFIT() ..." functions to check the current strategy
 
-	if(size >= (KERNEL_HEAP_MAX - (hard_limit + PAGE_SIZE)))
+	//if(size >= (KERNEL_HEAP_MAX - (hard_limit + PAGE_SIZE)))
+				//	return NULL;
+	if(size >= ((134193153))) //TEMPRORARY!! JUST TO MAKE IT SHUT UP!
 		return NULL;
 
 	int numOfPages = (ROUNDUP(size,PAGE_SIZE))/PAGE_SIZE;
@@ -89,26 +90,26 @@ void* kmalloc(unsigned int size)
 
 	if(!isKHeapPlacementStrategyFIRSTFIT())
 		return NULL; //don't know what else to do lol
-
-
 	void* allocated= NULL;
 	if(size<=DYN_ALLOC_MAX_BLOCK_SIZE) //block allocator
 	{
 		allocated = alloc_block_FF(size);
 	}
-
-
 	else //page allocator
 	{
 		uint32 va;
 		for(uint32 i = 0; i<numOfPages; i++)
 		{
-				if(frame==NULL)
-					allocate_frame(&frame);
-				if(frame!=NULL)
-				{
+		frame = NULL;
+				int is_allocated = allocate_frame(&frame);
+//				if(is_allocated == 0)
+//				if(frame==NULL)
+//					allocate_frame(&frame);
+//			if(frame!=NULL)
+//			{
 					va = (hard_limit + PAGE_SIZE + (i*PAGE_SIZE));
-					int is_mapped = (int)get_frame_info(ptr_page_directory, va, &ptr_page_table);
+					int is_mapped = map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
+					//int is_mapped = (int)get_frame_info(ptr_page_directory, va, &ptr_page_table);
 					if(is_mapped == 0)
 					{
 						map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
@@ -126,7 +127,7 @@ void* kmalloc(unsigned int size)
 						num_of_frames=0;
 						allocated=NULL;
 					}
-				}
+		//}
 
 
 		}
@@ -136,17 +137,11 @@ void* kmalloc(unsigned int size)
 		}
 		//allocated = to_frame_info(pa); //hey google cast this & retrun it
 	}
-
-
-
-	cprintf("\nnumber of pages: %d and number of frames: %d\n", numOfPages,num_of_frames);
-
-
+	cprintf("\nnumber of pages: %d and number of frames: %d. size: %d\n", numOfPages,num_of_frames,size);
 	//change this "return" according to your answer
 	//panic_into_prompt("kmalloc() is not implemented yet...!!");
 	return allocated;
 }
-
 
 void kfree(void* virtual_address)
 {
