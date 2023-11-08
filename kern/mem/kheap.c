@@ -76,9 +76,10 @@ void* kmalloc(unsigned int size)
 	//refer to the project presentation and documentation for details
 	// use "isKHeapPlacementStrategyFIRSTFIT() ..." functions to check the current strategy
 
-	//if(size >= (KERNEL_HEAP_MAX - (hard_limit + PAGE_SIZE)))
-				//	return NULL;
-	if(size >= ((134193153))) //TEMPRORARY!! JUST TO MAKE IT SHUT UP!
+	if(!isKHeapPlacementStrategyFIRSTFIT())
+		return NULL; //don't know what else to do lol
+
+	if(size >= ((134193153))) //TEMPRORAY! JUST TO MAKE IT SHUT UP!
 		return NULL;
 
 	int numOfPages = (ROUNDUP(size,PAGE_SIZE))/PAGE_SIZE;
@@ -86,27 +87,28 @@ void* kmalloc(unsigned int size)
 	uint32 pa = 0;
 	uint32 *ptr_page_table;
 	struct FrameInfo *frame =NULL;
-
-
-	if(!isKHeapPlacementStrategyFIRSTFIT())
-		return NULL; //don't know what else to do lol
 	void* allocated= NULL;
+
+
+
+
 	if(size<=DYN_ALLOC_MAX_BLOCK_SIZE) //block allocator
 	{
 		allocated = alloc_block_FF(size);
 	}
+
 	else //page allocator
 	{
 		uint32 va;
 		for(uint32 i = 0; i<numOfPages; i++)
 		{
-		frame = NULL;
+				frame = NULL;
 				int is_allocated = allocate_frame(&frame);
-//				if(is_allocated == 0)
-//				if(frame==NULL)
-//					allocate_frame(&frame);
-//			if(frame!=NULL)
-//			{
+				if(is_allocated == 0)
+				if(frame==NULL)
+					allocate_frame(&frame);
+				if(frame!=NULL)
+				{
 					va = (hard_limit + PAGE_SIZE + (i*PAGE_SIZE));
 					int is_mapped = map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
 					//int is_mapped = (int)get_frame_info(ptr_page_directory, va, &ptr_page_table);
@@ -127,7 +129,7 @@ void* kmalloc(unsigned int size)
 						num_of_frames=0;
 						allocated=NULL;
 					}
-		//}
+				}
 
 
 		}
