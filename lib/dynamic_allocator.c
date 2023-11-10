@@ -254,9 +254,10 @@ void *alloc_block_BF(uint32 size)
          else
          {
              //returns old sbreak, add block there
-             old_sbrk->size= size;
+             old_sbrk->size= ROUNDUP(size, PAGE_SIZE);
              old_sbrk->is_free=1;
              LIST_INSERT_AFTER(&block_list, blockInList, old_sbrk);
+             shrink_block(old_sbrk, size);
              return ++old_sbrk;
          }
 }
