@@ -193,6 +193,21 @@ void *krealloc(void *virtual_address, uint32 new_size)
 {
 	//TODO: [PROJECT'23.MS2 - BONUS#1] [1] KERNEL HEAP - krealloc()
 	// Write your code here, remove the panic and write your code
+
+	//(1)handling the special cases
+    if (virtual_address == NULL)
+    {
+    	return kmalloc(new_size); //alloc_FF(n) in case of realloc_block_FF(null, new_size), and size=0 handled in alloc
+
+    }
+
+    if (new_size == 0)
+    {
+       kfree(virtual_address); //to free(va) in case of realloc_block_FF(va,0)
+        return NULL;
+    }
+
+
 	return NULL;
-	panic("krealloc() is not implemented yet...!!");
+	//panic("krealloc() is not implemented yet...!!");
 }
