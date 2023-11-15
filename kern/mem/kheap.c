@@ -156,14 +156,7 @@ unsigned int kheap_physical_address(unsigned int virtual_address)
 	{
 		physical_address = ptr_page_table[page_table_index] & 0xFFFFF000;
 	}
-
-
-//	uint32 *ptr_page_table = NULL;
-//	struct FrameInfo *frame = get_frame_info(ptr_page_directory, virtual_address, &ptr_page_table);
-//	to_physical_address(frame);
-	//change this "return" according to your answer
 	return physical_address;
-
 }
 
 
