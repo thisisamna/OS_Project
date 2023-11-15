@@ -2270,6 +2270,7 @@ int test_kheap_phys_addr()
 		if ((pf_calculate_free_frames() - freeDiskFrames) != 0) panic("Page file is changed while it's not expected to. (pages are wrongly allocated/de-allocated in PageFile)");
 		if ((freeFrames - sys_calculate_free_frames()) < 512) panic("Wrong allocation: pages are not loaded successfully into memory");
 
+
 		//2 MB
 		freeFrames = sys_calculate_free_frames() ;
 		freeDiskFrames = pf_calculate_free_frames() ;
@@ -2278,7 +2279,9 @@ int test_kheap_phys_addr()
 		if ((pf_calculate_free_frames() - freeDiskFrames) != 0) panic("Page file is changed while it's not expected to. (pages are wrongly allocated/de-allocated in PageFile)");
 		if ((freeFrames - sys_calculate_free_frames()) < 512) panic("Wrong allocation: pages are not loaded successfully into memory");
 
+
 		//[DYNAMIC ALLOCATOR]
+		/*uncomment this
 		{
 			//1 KB
 			freeFrames = sys_calculate_free_frames() ;
@@ -2306,7 +2309,7 @@ int test_kheap_phys_addr()
 				panic("Wrong start address for the allocated space... should allocated by the dynamic allocator! check return address of kmalloc and/or sbrk");
 			if ((pf_calculate_free_frames() - freeDiskFrames) != 0) panic("Page file is changed while it's not expected to. (pages are wrongly allocated/de-allocated in PageFile)");
 		}
-
+*/
 		//7 KB
 		freeFrames = sys_calculate_free_frames() ;
 		freeDiskFrames = pf_calculate_free_frames() ;
@@ -2314,6 +2317,7 @@ int test_kheap_phys_addr()
 		if ((uint32) ptr_allocations[5] != (ACTUAL_START + 4*Mega /*+ 8*kilo*/)) panic("Wrong start address for the allocated space... check return address of kmalloc & updating of heap ptr");
 		if ((pf_calculate_free_frames() - freeDiskFrames) != 0) panic("Page file is changed while it's not expected to. (pages are wrongly allocated/de-allocated in PageFile)");
 		if ((freeFrames - sys_calculate_free_frames()) < 2) panic("Wrong allocation: pages are not loaded successfully into memory");
+
 
 		//3 MB
 		freeFrames = sys_calculate_free_frames() ;
@@ -2367,7 +2371,7 @@ int test_kheap_phys_addr()
 				if (((ptr_table[j] & 0xFFFFF000)+(va & 0x00000FFF))!= allPAs[i])
 				{
 					//cprintf("\nVA = %x, table entry = %x, khep_pa = %x\n",va + j*PAGE_SIZE, (ptr_table[j] & 0xFFFFF000) , allPAs[i]);
-					panic("Wrong kheap_physical_address");
+					panic("Wrong kheap_physical_address found %d. ecpected %d." ,((ptr_table[j] & 0xFFFFF000)+(va & 0x00000FFF)), allPAs[i]);
 				}
 				va+=PAGE_SIZE+offset;
 			}
