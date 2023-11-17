@@ -91,7 +91,7 @@ void* sbrk(int increment)
 		return (void*) old_segment_break;
 
 	}
-	else if(increment<0)
+	else
 	{
 		increment*=-1;
 		for(int i=0; i<increment/PAGE_SIZE;i++)
@@ -104,9 +104,7 @@ void* sbrk(int increment)
 		segment_break=va;
 
 		return (void*)va;
-
 	}
-	return NULL;
 
 	//panic("not implemented yet");
 }
@@ -161,31 +159,6 @@ void* kmalloc(unsigned int size)
 	if(numOfPagesFound != numOfPages)
 	{
 		return NULL;
-		/*
-		sbrk(size-numOfPagesFound*PAGE_SIZE);
-		allocated=(void*)va;
-
-		//loop again
-		for(uint32 page = (hard_limit + PAGE_SIZE); page <KERNEL_HEAP_MAX; page = (page + PAGE_SIZE))
-			{
-				ptr_page_table = NULL;
-				//if the page is not mapped
-				if(get_frame_info(ptr_page_directory, page, &ptr_page_table) == 0)
-				{
-					numOfPagesFound++;
-					if(numOfPagesFound == numOfPages)
-					{
-						va = (page - ((numOfPages)*PAGE_SIZE) + PAGE_SIZE);
-						allocated = (void*) va;
-						break;
-					}
-				}
-
-				else
-					numOfPagesFound = 0;
-			}
-			*/
-
 	}
 
 	//allocate and map then return va
