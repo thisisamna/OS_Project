@@ -543,6 +543,9 @@ uint32 syscall(uint32 syscallno, uint32 a1, uint32 a2, uint32 a3, uint32 a4, uin
 		    	sched_kill_env(curenv->env_id);
 		    break;
 	//=====================================================================
+	case SYS_get_hard_limit:
+		return curenv->hard_limit;
+		break;
 	case SYS_cputs:
 		sys_cputs((const char*)a1,a2,(uint8)a3);
 		return 0;
@@ -735,6 +738,7 @@ uint32 syscall(uint32 syscallno, uint32 a1, uint32 a2, uint32 a3, uint32 a4, uin
 	case NSYSCALLS:
 		return 	-E_INVAL;
 		break;
+
 	}
 	//panic("syscall not implemented");
 	return -E_INVAL;

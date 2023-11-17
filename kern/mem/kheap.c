@@ -15,9 +15,34 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 	//	On success: 0
 	//	Otherwise (if no memory OR initial size exceed the given limit): E_NO_MEM
 
-	//Comment the following line(s) before start coding...
-	panic("not implemented yet");
+
+	/*Requirement 1: Initialization*/
+	start = daStart;
+	segment_break = daStart +initSizeToAllocate;
+	hard_limit = daLimit;
+
+	//handle: "if no memory found" ???
+	if(initSizeToAllocate > daLimit - daStart)
+		return E_NO_MEM;
+
+	/*Requirement 2: All pages within space should be allocated and mapped*/
+	uint32 page;
+	struct FrameInfo *frame;
+	for(page = daStart; page<segment_break;page+=PAGE_SIZE)
+	{
+
+		allocate_frame(&frame);
+		map_frame(ptr_page_directory, frame,  page, PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
+
+	}
+
+
+	/*Requirement 3: Call initialize_dynamic_allocator*/
+	initialize_dynamic_allocator(daStart, initSizeToAllocate);
+
 	return 0;
+
+
 }
 
 void* sbrk(int increment)
@@ -39,10 +64,50 @@ void* sbrk(int increment)
 	 */
 
 	//MS2: COMMENT THIS LINE BEFORE START CODING====
-	return (void*)-1 ;
-	panic("not implemented yet");
-}
+	struct FrameInfo* frame =NULL;
+	uint32 *ptr_page_table = NULL;
+	uint32 old_segment_break= segment_break;
+	uint32 va = segment_break;
 
+	increment= ROUNDUP(increment, PAGE_SIZE);
+
+	if(increment==0)
+	{
+		return (void*) old_segment_break;
+	}
+	else if(increment>0)
+	{
+		if(va+increment>hard_limit)
+		{
+			panic("Exceeded limit");
+		}
+		for(int i=0; i<increment/PAGE_SIZE;i++)
+		{
+			allocate_frame(&frame);
+			map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_WRITEABLE);
+			va +=PAGE_SIZE;
+		}
+		segment_break=va;
+		return (void*) old_segment_break;
+
+	}
+	else
+	{
+		increment*=-1;
+		for(int i=0; i<increment/PAGE_SIZE;i++)
+		{
+			va -=PAGE_SIZE;
+			frame = get_frame_info(ptr_page_directory,va,&ptr_page_table);
+			unmap_frame(ptr_page_directory,va);
+			free_frame(frame);
+		}
+		segment_break=va;
+
+		return (void*)va;
+	}
+
+	//panic("not implemented yet");
+}
 
 void* kmalloc(unsigned int size)
 {
@@ -50,9 +115,60 @@ void* kmalloc(unsigned int size)
 	//refer to the project presentation and documentation for details
 	// use "isKHeapPlacementStrategyFIRSTFIT() ..." functions to check the current strategy
 
-	//change this "return" according to your answer
-	kpanic_into_prompt("kmalloc() is not implemented yet...!!");
-	return NULL;
+	int numOfPages = (ROUNDUP(size,PAGE_SIZE))/PAGE_SIZE;
+	int numOfPagesFound = 0;
+	uint32 *ptr_page_table = NULL;
+	uint32 va = 0;
+	struct FrameInfo *frame =NULL;
+	void* allocated= NULL;
+
+	if(!isKHeapPlacementStrategyFIRSTFIT())
+		return NULL;
+
+	//BLOCK ALLOCATOR
+	if(size<=DYN_ALLOC_MAX_BLOCK_SIZE)
+		return alloc_block_FF(size);
+
+
+
+	//check if there is sufficient space
+	for(uint32 page = (hard_limit + PAGE_SIZE); page <KERNEL_HEAP_MAX; page = (page + PAGE_SIZE))
+	{
+		ptr_page_table = NULL;
+		//if the page is not mapped
+		if(get_frame_info(ptr_page_directory, page, &ptr_page_table) == 0)
+		{
+			if(numOfPagesFound==0)
+				va=page;
+			numOfPagesFound++;
+			if(numOfPagesFound == numOfPages)
+			{
+				//va = (page - ((numOfPages)*PAGE_SIZE) + PAGE_SIZE);
+				allocated = (void*) va;
+				break;
+			}
+		}
+
+		else
+		{
+			va=0;
+			numOfPagesFound = 0;
+		}
+	}
+
+	if(numOfPagesFound != numOfPages)
+	{
+		return NULL;
+	}
+
+	//allocate and map then return va
+	for(uint32 i = 0; i<numOfPages; i++)
+	{
+		frame = NULL;
+		allocate_frame(&frame);
+		map_frame(ptr_page_directory, frame,  (va + (PAGE_SIZE * i)), PERM_PRESENT | PERM_WRITEABLE);
+	}
+	return allocated;
 }
 
 void kfree(void* virtual_address)
@@ -68,9 +184,30 @@ unsigned int kheap_virtual_address(unsigned int physical_address)
 	//TODO: [PROJECT'23.MS2 - #05] [1] KERNEL HEAP - kheap_virtual_address()
 	//refer to the project presentation and documentation for details
 	// Write your code here, remove the panic and write your code
-	panic("kheap_virtual_address() is not implemented yet...!!");
+	//panic("kheap_virtual_address() is not implemented yet...!!");
 
 	//EFFICIENT IMPLEMENTATION ~O(1) IS REQUIRED ==================
+	struct FrameInfo* frame = (struct FrameInfo*) physical_address;
+	return frame->va;
+	//unsigned int offset = PGOFF(physical_address);
+/*
+	if(physical_address<=segment_break)
+	{
+		return physical_address+start;
+	}
+	else if(physical_address<=hard_limit)
+	{
+
+	}
+	else if(physical_address<=KERNEL_HEAP_MAX)
+	{
+
+	}
+	else
+	{
+
+	}
+	*/
 
 	//change this "return" according to your answer
 	return 0;
@@ -78,13 +215,28 @@ unsigned int kheap_virtual_address(unsigned int physical_address)
 
 unsigned int kheap_physical_address(unsigned int virtual_address)
 {
-	//TODO: [PROJECT'23.MS2 - #06] [1] KERNEL HEAP - kheap_physical_address()
-	//refer to the project presentation and documentation for details
-	// Write your code here, remove the panic and write your code
-	panic("kheap_physical_address() is not implemented yet...!!");
+	//EFFICIENT IMPLEMENTATION ~O(1) IS REQUIRED ==================
 
-	//change this "return" according to your answer
-	return 0;
+	uint32 *ptr_page_table = NULL;
+	uint32 page_table_dir = PDX(virtual_address);
+	unsigned int page_table_index = PTX(virtual_address);
+	unsigned int offset = PGOFF(virtual_address);
+
+	unsigned int physical_address = 0;
+
+	get_page_table(ptr_page_directory, (uint32)virtual_address, &ptr_page_table);
+	if(ptr_page_table != NULL)
+	{
+		physical_address = (ptr_page_table[page_table_index]+offset)&(0xFFFFF000);
+	}
+	return physical_address;
+	/*
+	============== Alternative solution? =================================
+
+	struct FrameInfo* frame = (struct FrameInfo*) virtual_address; WRONG
+	return to_physical_address(frame);
+	==========================================
+	*/
 }
 
 
@@ -124,6 +276,21 @@ void *krealloc(void *virtual_address, uint32 new_size)
 {
 	//TODO: [PROJECT'23.MS2 - BONUS#1] [1] KERNEL HEAP - krealloc()
 	// Write your code here, remove the panic and write your code
+
+	//(1)handling the special cases
+    if (virtual_address == NULL)
+    {
+    	return kmalloc(new_size); //alloc_FF(n) in case of realloc_block_FF(null, new_size), and size=0 handled in alloc
+
+    }
+
+    if (new_size == 0)
+    {
+       kfree(virtual_address); //to free(va) in case of realloc_block_FF(va,0)
+        return NULL;
+    }
+
+
 	return NULL;
-	panic("krealloc() is not implemented yet...!!");
+	//panic("krealloc() is not implemented yet...!!");
 }

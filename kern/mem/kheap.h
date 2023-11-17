@@ -16,6 +16,7 @@ uint32 _KHeapPlacementStrategy;
 #define KHP_PLACE_BESTFIT 	0x2
 #define KHP_PLACE_NEXTFIT 	0x3
 #define KHP_PLACE_WORSTFIT 	0x4
+#define kilo (1024)
 
 static inline void setKHeapPlacementStrategyCONTALLOC(){_KHeapPlacementStrategy = KHP_PLACE_CONTALLOC;}
 static inline void setKHeapPlacementStrategyFIRSTFIT(){_KHeapPlacementStrategy = KHP_PLACE_FIRSTFIT;}
@@ -43,6 +44,11 @@ int numOfKheapVACalls ;
 
 /*2023*/
 //TODO: [PROJECT'23.MS2 - #01] [1] KERNEL HEAP - initialization: add suitable code here
+
+/*Declaration*/
+uint32 start;
+uint32 segment_break;
+uint32 hard_limit;
 
 //====================================================================================
 
