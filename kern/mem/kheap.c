@@ -84,7 +84,7 @@ void* sbrk(int increment)
 		for(int i=0; i<increment/PAGE_SIZE;i++)
 		{
 			allocate_frame(&frame);
-			map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
+			map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_WRITEABLE);
 			va +=PAGE_SIZE;
 		}
 		segment_break=va;
@@ -166,7 +166,7 @@ void* kmalloc(unsigned int size)
 	{
 		frame = NULL;
 		allocate_frame(&frame);
-		map_frame(ptr_page_directory, frame,  (va + (PAGE_SIZE * i)), PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
+		map_frame(ptr_page_directory, frame,  (va + (PAGE_SIZE * i)), PERM_PRESENT | PERM_WRITEABLE);
 	}
 	return allocated;
 }
