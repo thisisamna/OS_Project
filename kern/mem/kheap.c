@@ -148,15 +148,15 @@ unsigned int kheap_virtual_address(unsigned int physical_address)
 unsigned int kheap_physical_address(unsigned int virtual_address)
 {
 	uint32 *ptr_page_table = NULL;
-	//uint32 page_table_index = PDX(virtual_address);
+	uint32 page_table_dir = PDX(virtual_address);
 	unsigned int page_table_index = PTX(virtual_address);
 	unsigned int offset = PGOFF(virtual_address);
 	unsigned int physical_address = 0;
+
 	get_page_table(ptr_page_directory, (uint32)virtual_address, &ptr_page_table);
 	if(ptr_page_table != NULL)
 	{
-		//cprintf("offset: %d.\n", offset);
-		physical_address = ptr_page_table[page_table_index]&(0xFFFFF000+offset);
+		physical_address = (ptr_page_table[page_table_index]+offset)&(0xFFFFF000);
 	}
 	return physical_address;
 }

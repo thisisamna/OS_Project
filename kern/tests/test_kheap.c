@@ -2279,7 +2279,6 @@ int test_kheap_phys_addr()
 		if ((freeFrames - sys_calculate_free_frames()) < 512) panic("Wrong allocation: pages are not loaded successfully into memory");
 
 		//[DYNAMIC ALLOCATOR]
-
 		{
 			//1 KB
 			freeFrames = sys_calculate_free_frames() ;
@@ -2370,6 +2369,7 @@ int test_kheap_phys_addr()
 					//cprintf("\nVA = %x, table entry = %x, khep_pa = %x\n",va + j*PAGE_SIZE, (ptr_table[j] & 0xFFFFF000) , allPAs[i]);
 					panic("Wrong kheap_physical_address");
 					va+=PAGE_SIZE+offset;
+				}
 			}
 		}
 	}
