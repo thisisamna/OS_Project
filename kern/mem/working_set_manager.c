@@ -19,26 +19,17 @@ inline struct WorkingSetElement* env_page_ws_list_create_element(struct Env* e, 
 	// Write your code here, remove the panic and write your code
 	//panic("env_page_ws_list_create_element() is not implemented yet...!!");
 	 // Check if the virtual_address is valid
-	    if (virtual_address == 0) {
-	        return NULL;
-	    }
-
-	    // Allocate memory for the new WorkingSetElement
-	    struct WorkingSetElement* new_element = (struct WorkingSetElement*) e;
-
-	    // Check if memory allocation was successful
-	    if (new_element == NULL)
+	    if (virtual_address == 0)
 	        return NULL;
 
+	    struct WorkingSetElement* newElement = (struct WorkingSetElement*) e;
+	    if (newElement == NULL)
+	        return NULL;
 
-	    // Initialize the fields of the new WorkingSetElement
-	    new_element->virtual_address = virtual_address;
-	    new_element->empty = 0;
+	    newElement->virtual_address = virtual_address;
+	    newElement->empty = 0;
 
-	    // Assuming you have a linked list, you can add the element to the list here.
-	    // If using a common list implementation like the one in the Linux kernel, you'd use functions like LIST_INSERT_HEAD() or LIST_INSERT_TAIL() to add the new element to your list.
-
-	    return new_element;
+	    return newElement;
 }
 inline void env_page_ws_invalidate(struct Env* e, uint32 virtual_address)
 {
