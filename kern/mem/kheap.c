@@ -64,6 +64,18 @@ void* sbrk(int increment)
 	 */
 
 	//MS2: COMMENT THIS LINE BEFORE START CODING====
+	if(increment==0)
+	{
+		return (void*)segment_break;
+	}
+	else if(increment<0)
+	{
+
+	}
+	else if(increment>0)
+	{
+
+	}
 	return (void*)-1 ;
 	panic("not implemented yet");
 }
