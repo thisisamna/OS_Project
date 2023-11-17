@@ -194,9 +194,30 @@ unsigned int kheap_virtual_address(unsigned int physical_address)
 	//TODO: [PROJECT'23.MS2 - #05] [1] KERNEL HEAP - kheap_virtual_address()
 	//refer to the project presentation and documentation for details
 	// Write your code here, remove the panic and write your code
-	panic("kheap_virtual_address() is not implemented yet...!!");
+	//panic("kheap_virtual_address() is not implemented yet...!!");
 
 	//EFFICIENT IMPLEMENTATION ~O(1) IS REQUIRED ==================
+	struct FrameInfo* frame = (struct FrameInfo*) physical_address;
+	return frame->va;
+	//unsigned int offset = PGOFF(physical_address);
+/*
+	if(physical_address<=segment_break)
+	{
+		return physical_address+start;
+	}
+	else if(physical_address<=hard_limit)
+	{
+
+	}
+	else if(physical_address<=KERNEL_HEAP_MAX)
+	{
+
+	}
+	else
+	{
+
+	}
+	*/
 
 	//change this "return" according to your answer
 	return 0;
@@ -204,13 +225,28 @@ unsigned int kheap_virtual_address(unsigned int physical_address)
 
 unsigned int kheap_physical_address(unsigned int virtual_address)
 {
-	//TODO: [PROJECT'23.MS2 - #06] [1] KERNEL HEAP - kheap_physical_address()
-	//refer to the project presentation and documentation for details
-	// Write your code here, remove the panic and write your code
-	panic("kheap_physical_address() is not implemented yet...!!");
+	//EFFICIENT IMPLEMENTATION ~O(1) IS REQUIRED ==================
 
-	//change this "return" according to your answer
-	return 0;
+	uint32 *ptr_page_table = NULL;
+	uint32 page_table_dir = PDX(virtual_address);
+	unsigned int page_table_index = PTX(virtual_address);
+	unsigned int offset = PGOFF(virtual_address);
+
+	unsigned int physical_address = 0;
+
+	get_page_table(ptr_page_directory, (uint32)virtual_address, &ptr_page_table);
+	if(ptr_page_table != NULL)
+	{
+		physical_address = (ptr_page_table[page_table_index]+offset)&(0xFFFFF000);
+	}
+	return physical_address;
+	/*
+	============== Alternative solution? =================================
+
+	struct FrameInfo* frame = (struct FrameInfo*) virtual_address; WRONG
+	return to_physical_address(frame);
+	==========================================
+	*/
 }
 
 

@@ -2368,8 +2368,8 @@ int test_kheap_phys_addr()
 				{
 					//cprintf("\nVA = %x, table entry = %x, khep_pa = %x\n",va + j*PAGE_SIZE, (ptr_table[j] & 0xFFFFF000) , allPAs[i]);
 					panic("Wrong kheap_physical_address");
+					va+=PAGE_SIZE+offset;
 				}
-				va+=PAGE_SIZE+offset;
 			}
 		}
 	}
