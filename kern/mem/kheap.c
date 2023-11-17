@@ -3,8 +3,7 @@
 #include <inc/memlayout.h>
 #include <inc/dynamic_allocator.h>
 #include "memory_manager.h"
-
-
+int virtual_addresses_sizes[((KERNEL_HEAP_MAX-KERNEL_HEAP_START)/PAGE_SIZE)+1] = {0};
 int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate, uint32 daLimit)
 {
 	//TODO: [PROJECT'23.MS2 - #01] [1] KERNEL HEAP - initialize_kheap_dynamic_allocator()
@@ -30,10 +29,8 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 	struct FrameInfo *frame;
 	for(page = daStart; page<segment_break;page+=PAGE_SIZE)
 	{
-
 		allocate_frame(&frame);
 		map_frame(ptr_page_directory, frame,  page, PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
-
 	}
 
 
@@ -88,8 +85,6 @@ void* kmalloc(unsigned int size)
 	if(size<=DYN_ALLOC_MAX_BLOCK_SIZE)
 		return alloc_block_FF(size);
 
-
-
 	//check if there is sufficient space
 	for(uint32 page = (hard_limit + PAGE_SIZE); page <KERNEL_HEAP_MAX; page = (page + PAGE_SIZE))
 	{
@@ -115,6 +110,7 @@ void* kmalloc(unsigned int size)
 		return NULL;
 
 	//allocate and map then return va
+	//virtual_addresses_sizes[(int)va] = numOfPages;
 	for(uint32 i = 0; i<numOfPages; i++)
 	{
 		frame = NULL;
@@ -126,10 +122,20 @@ void* kmalloc(unsigned int size)
 
 void kfree(void* virtual_address)
 {
-	//TODO: [PROJECT'23.MS2 - #04] [1] KERNEL HEAP - kfree()
-	//refer to the project presentation and documentation for details
-	// Write your code here, remove the panic and write your code
-	panic("kfree() is not implemented yet...!!");
+		int va = (int) virtual_address;
+		if(virtual_addresses_sizes[va] == 0)
+		{
+			va = 0; //violating code of clean code lol
+		}
+		else
+		{
+			for(int i = va; i<virtual_addresses_sizes[va]*PAGE_SIZE; i+=PAGE_SIZE)
+			{
+				unmap_frame(ptr_page_directory, i); //this line is saving so much time i love it
+			}
+		}
+
+		virtual_addresses_sizes[va] = 0;
 }
 
 unsigned int kheap_virtual_address(unsigned int physical_address)
