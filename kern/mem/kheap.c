@@ -177,20 +177,7 @@ void* kmalloc(unsigned int size)
 void kfree(void* virtual_address)
 {
 
-		int va = (int) virtual_address;
-		if(virtual_addresses_sizes[va] == 0)
-		{
-			va = 0; //violating code of clean code lol
-		}
-		else
-		{
-			for(int i = va; i<virtual_addresses_sizes[va]*PAGE_SIZE; i+=PAGE_SIZE)
-			{
-				unmap_frame(ptr_page_directory, i); //this line is saving so much time i love it
-			}
-		}
 
-		virtual_addresses_sizes[va] = 0;
 }
 
 unsigned int kheap_virtual_address(unsigned int physical_address)
