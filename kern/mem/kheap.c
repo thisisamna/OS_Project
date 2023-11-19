@@ -4,6 +4,7 @@
 #include <inc/dynamic_allocator.h>
 #include "memory_manager.h"
 
+int virtual_addresses_sizes[((KERNEL_HEAP_MAX-KERNEL_HEAP_START)/PAGE_SIZE)] = {0};
 
 int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate, uint32 daLimit)
 {
@@ -22,7 +23,7 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 	hard_limit = daLimit;
 
 	//handle: "if no memory found" ???
-	if(initSizeToAllocate > daLimit - daStart)
+	if(initSizeToAllocate > daLimit - daStart )
 		return E_NO_MEM;
 
 	/*Requirement 2: All pages within space should be allocated and mapped*/
@@ -160,7 +161,8 @@ void* kmalloc(unsigned int size)
 	{
 		return NULL;
 	}
-
+	int index = ((va-KERNEL_HEAP_START)/PAGE_SIZE);
+	virtual_addresses_sizes[index] = numOfPages;
 	//allocate and map then return va
 	for(uint32 i = 0; i<numOfPages; i++)
 	{
@@ -173,10 +175,42 @@ void* kmalloc(unsigned int size)
 
 void kfree(void* virtual_address)
 {
-	//TODO: [PROJECT'23.MS2 - #04] [1] KERNEL HEAP - kfree()
-	//refer to the project presentation and documentation for details
-	// Write your code here, remove the panic and write your code
-	panic("kfree() is not implemented yet...!!");
+	/*
+    //TODO: [PROJECT'23.MS2 - #04] [1] KERNEL HEAP - kfree()
+    //refer to the project presentation and documentation for details
+    // Write your code here, remove the panic and write your code
+
+    bool free = NULL ;
+
+      //If virtual address inside the [PAGE ALLOCATOR] range
+       //FREE the space of the given address from RAM
+     if (virtual_address <= (void*) KERNEL_HEAP_MAX && virtual_address>= (void*)hard_limit+PAGE_SIZE ){
+            ///from virtual to physical
+         unsigned int pa = kheap_physical_address();
+
+             struct Frame_Info *ptr_frame_into = to_frame_info(pa);
+            ///insert in free frame list and un map
+             free_frame(ptr_frame_into);
+             unmap_frame(ptr_page_directory,virtual_address);
+
+     }
+
+      //If virtual address inside the [BLOCK ALLOCATOR] range
+       //Use dynamic allocator to free the given address
+    if(virtual_address >= (void*) KERNEL_HEAP_START &&  virtual_address<= (void*)hard_limit )
+     {
+        free_block(virtual_address);
+     }
+
+      //if outside the [PAGE ALLOCATOR] range and the [BLOCK ALLOCATOR] range
+       // should panic(…)
+     else {
+         panic("invalid address");
+     }
+
+*/
+
+    panic("kfree() is not implemented yet...!!");
 }
 
 unsigned int kheap_virtual_address(unsigned int physical_address)
