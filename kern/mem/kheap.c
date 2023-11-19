@@ -3,13 +3,10 @@
 #include <inc/memlayout.h>
 #include <inc/dynamic_allocator.h>
 #include "memory_manager.h"
-<<<<<<< HEAD
-int virtual_addresses_sizes[((KERNEL_HEAP_MAX-KERNEL_HEAP_START)/PAGE_SIZE)+1] = {0};
-=======
+
 
 int virtual_addresses_sizes[((KERNEL_HEAP_MAX-KERNEL_HEAP_START)/PAGE_SIZE)] = {0};
 
->>>>>>> kheap_allocator
 int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate, uint32 daLimit)
 {
 	//TODO: [PROJECT'23.MS2 - #01] [1] KERNEL HEAP - initialize_kheap_dynamic_allocator()
@@ -182,25 +179,29 @@ void kfree(void* virtual_address)
 	//refer to the project presentation and documentation for details
 	// Write your code here, remove the panic and write your code
 
-	bool free = NULL ;
-
+	bool free = 0 ;
+	uint32 va = (uint32) virtual_address;
 	  //If virtual address inside the [PAGE ALLOCATOR] range
 	   //FREE the space of the given address from RAM
-	 if (virtual_address <= (void*) KERNEL_HEAP_MAX && virtual_address>= (void*)hard_limit+PAGE_SIZE ){
+	 if (va < KERNEL_HEAP_MAX && va>= hard_limit+PAGE_SIZE )
+	 {
 			///from virtual to physical
-		 unsigned int pa = kheap_physical_address();
+		 	 uint32 index = (va-KERNEL_HEAP_START)/PAGE_SIZE;
+		 	 uint32 numOfPages = virtual_addresses_sizes[index];
+		 	 for(int i= 0; i< numOfPages; i++)
+		 	 {
+		 		 unmap_frame(ptr_page_directory,va);
+		 		 va+=PAGE_SIZE;
+		 	 }
 
-			 struct Frame_Info *ptr_frame_into = to_frame_info(pa);
-			///insert in free frame list and un map
-			 free_frame(ptr_frame_into);
-			 unmap_frame(ptr_page_directory,virtual_address);
-
+		 	virtual_addresses_sizes[index]=0;
 	 }
 
 	  //If virtual address inside the [BLOCK ALLOCATOR] range
 	   //Use dynamic allocator to free the given address
-	if(virtual_address >= (void*) KERNEL_HEAP_START &&  virtual_address<= (void*)hard_limit )
+	 else if(va >= KERNEL_HEAP_START &&  va< hard_limit )
 	 {
+
 		free_block(virtual_address);
 	 }
 
