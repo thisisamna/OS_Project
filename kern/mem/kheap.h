@@ -50,6 +50,5 @@ uint32 start;
 uint32 segment_break;
 uint32 hard_limit;
 
-//====================================================================================
 
 #endif // FOS_KERN_KHEAP_H_

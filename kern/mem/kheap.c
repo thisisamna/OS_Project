@@ -3,7 +3,13 @@
 #include <inc/memlayout.h>
 #include <inc/dynamic_allocator.h>
 #include "memory_manager.h"
+<<<<<<< HEAD
 int virtual_addresses_sizes[((KERNEL_HEAP_MAX-KERNEL_HEAP_START)/PAGE_SIZE)+1] = {0};
+=======
+
+int virtual_addresses_sizes[((KERNEL_HEAP_MAX-KERNEL_HEAP_START)/PAGE_SIZE)] = {0};
+
+>>>>>>> kheap_allocator
 int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate, uint32 daLimit)
 {
 	//TODO: [PROJECT'23.MS2 - #01] [1] KERNEL HEAP - initialize_kheap_dynamic_allocator()
@@ -21,7 +27,7 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 	hard_limit = daLimit;
 
 	//handle: "if no memory found" ???
-	if(initSizeToAllocate > daLimit - daStart)
+	if(initSizeToAllocate > daLimit - daStart )
 		return E_NO_MEM;
 
 	/*Requirement 2: All pages within space should be allocated and mapped*/
@@ -155,7 +161,8 @@ void* kmalloc(unsigned int size)
 	{
 		return NULL;
 	}
-
+	int index = ((va-KERNEL_HEAP_START)/PAGE_SIZE);
+	virtual_addresses_sizes[index] = numOfPages;
 	//allocate and map then return va
 	//virtual_addresses_sizes[(int)va] = numOfPages;
 	for(uint32 i = 0; i<numOfPages; i++)
@@ -169,6 +176,7 @@ void* kmalloc(unsigned int size)
 
 void kfree(void* virtual_address)
 {
+
 		int va = (int) virtual_address;
 		if(virtual_addresses_sizes[va] == 0)
 		{
