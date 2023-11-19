@@ -179,12 +179,13 @@ void kfree(void* virtual_address)
 	//refer to the project presentation and documentation for details
 	// Write your code here, remove the panic and write your code
 
-	bool free = 0 ;
 	uint32 va = (uint32) virtual_address;
 	  //If virtual address inside the [PAGE ALLOCATOR] range
 	   //FREE the space of the given address from RAM
 	 if (va < KERNEL_HEAP_MAX && va>= hard_limit+PAGE_SIZE )
 	 {
+
+		 va=ROUNDDOWN(va,PAGE_SIZE);
 			///from virtual to physical
 		 	 uint32 index = (va-KERNEL_HEAP_START)/PAGE_SIZE;
 		 	 uint32 numOfPages = virtual_addresses_sizes[index];
@@ -223,19 +224,19 @@ unsigned int kheap_virtual_address(unsigned int physical_address)
 	//refer to the project presentation and documentation for details
 	// Write your code here, remove the panic and write your code
 	//panic("kheap_virtual_address() is not implemented yet...!!");
-
+/*
 	//EFFICIENT IMPLEMENTATION ~O(1) IS REQUIRED ==================
 	struct FrameInfo* frame = (struct FrameInfo*) physical_address;
 	return frame->va;
 	//unsigned int offset = PGOFF(physical_address);
-/*
-	if(physical_address<=segment_break)
-	{
-		return physical_address+start;
-	}
-	else if(physical_address<=hard_limit)
-	{
 
+	if(physical_address<KERNEL_HEAP_START)
+	{
+		return 0;
+	}
+	else if(physical_address<hard_limit)
+	{
+		return
 	}
 	else if(physical_address<=KERNEL_HEAP_MAX)
 	{
@@ -246,7 +247,9 @@ unsigned int kheap_virtual_address(unsigned int physical_address)
 
 	}
 	*/
-
+	uint32 offset= physical_address%PAGE_SIZE;
+	physical_address-=offset;
+	physical_address=physical_address << PGSHIFT;
 	//change this "return" according to your answer
 	return 0;
 }
@@ -254,8 +257,8 @@ unsigned int kheap_virtual_address(unsigned int physical_address)
 unsigned int kheap_physical_address(unsigned int virtual_address)
 {
 	//EFFICIENT IMPLEMENTATION ~O(1) IS REQUIRED ==================
-
-	uint32 *ptr_page_table = NULL;
+/*
+	uint32 *ptr_page_table = NULL;b
 	uint32 page_table_dir = PDX(virtual_address);
 	unsigned int page_table_index = PTX(virtual_address);
 	unsigned int offset = PGOFF(virtual_address);
@@ -265,16 +268,22 @@ unsigned int kheap_physical_address(unsigned int virtual_address)
 	get_page_table(ptr_page_directory, (uint32)virtual_address, &ptr_page_table);
 	if(ptr_page_table != NULL)
 	{
-		physical_address = (ptr_page_table[page_table_index]+offset)&(0xFFFFF000);
+		physical_address = (ptr_page_table[page_table_index]&(0xFFFFF000))+offset;
 	}
-	return physical_address;
-	/*
-	============== Alternative solution? =================================
+	return to_physical_address((void*)physical_address);
 
-	struct FrameInfo* frame = (struct FrameInfo*) virtual_address; WRONG
-	return to_physical_address(frame);
-	==========================================
-	*/
+*/
+	struct FrameInfo* frame = NULL;
+	uint32 *ptr_page_table = NULL;
+	unsigned int offset = PGOFF(virtual_address);
+	virtual_address =ROUNDDOWN(virtual_address, PAGE_SIZE);
+	frame = get_frame_info(ptr_page_directory,virtual_address,&ptr_page_table);
+
+	if(frame!=(void*)0)
+	{
+		return (unsigned int)to_physical_address(frame)+offset;
+	}
+	return 0;
 }
 
 
