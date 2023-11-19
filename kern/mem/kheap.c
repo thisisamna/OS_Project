@@ -61,8 +61,49 @@ void* sbrk(int increment)
 	 */
 
 	//MS2: COMMENT THIS LINE BEFORE START CODING====
-	return (void*)-1 ;
-	panic("not implemented yet");
+	struct FrameInfo* frame =NULL;
+	uint32 *ptr_page_table = NULL;
+	uint32 old_segment_break= segment_break;
+	uint32 va = segment_break;
+
+	increment= ROUNDUP(increment, PAGE_SIZE);
+
+	if(increment==0)
+	{
+		return (void*) old_segment_break;
+	}
+	else if(increment>0)
+	{
+		if(va+increment>hard_limit)
+		{
+			panic("Exceeded limit");
+		}
+		for(int i=0; i<increment/PAGE_SIZE;i++)
+		{
+			allocate_frame(&frame);
+			map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_WRITEABLE);
+			va +=PAGE_SIZE;
+		}
+		segment_break=va;
+		return (void*) old_segment_break;
+
+	}
+	else
+	{
+		increment*=-1;
+		for(int i=0; i<increment/PAGE_SIZE;i++)
+		{
+			va -=PAGE_SIZE;
+			frame = get_frame_info(ptr_page_directory,va,&ptr_page_table);
+			unmap_frame(ptr_page_directory,va);
+			free_frame(frame);
+		}
+		segment_break=va;
+
+		return (void*)va;
+	}
+
+	//panic("not implemented yet");
 }
 
 void* kmalloc(unsigned int size)
@@ -92,22 +133,28 @@ void* kmalloc(unsigned int size)
 		//if the page is not mapped
 		if(get_frame_info(ptr_page_directory, page, &ptr_page_table) == 0)
 		{
+			if(numOfPagesFound==0)
+				va=page;
 			numOfPagesFound++;
 			if(numOfPagesFound == numOfPages)
 			{
-				va = (page - ((numOfPages)*PAGE_SIZE) + PAGE_SIZE);
+				//va = (page - ((numOfPages)*PAGE_SIZE) + PAGE_SIZE);
 				allocated = (void*) va;
 				break;
 			}
 		}
 
 		else
+		{
+			va=0;
 			numOfPagesFound = 0;
+		}
 	}
 
-
 	if(numOfPagesFound != numOfPages)
+	{
 		return NULL;
+	}
 
 	//allocate and map then return va
 	//virtual_addresses_sizes[(int)va] = numOfPages;
@@ -115,7 +162,7 @@ void* kmalloc(unsigned int size)
 	{
 		frame = NULL;
 		allocate_frame(&frame);
-		map_frame(ptr_page_directory, frame,  (va + (PAGE_SIZE * i)), PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
+		map_frame(ptr_page_directory, frame,  (va + (PAGE_SIZE * i)), PERM_PRESENT | PERM_WRITEABLE);
 	}
 	return allocated;
 }

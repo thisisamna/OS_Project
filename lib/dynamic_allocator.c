@@ -178,7 +178,7 @@ void *alloc_block_FF(uint32 size)
             else if(size == blockInList->size)
                 {
             	blockInList->is_free=0;
-                    return ++blockInList;
+                return ++blockInList;
 
                 }
 
@@ -187,16 +187,12 @@ void *alloc_block_FF(uint32 size)
     }
     //if no blocks were found:
     struct BlockMetaData* old_sbrk=sbrk(size);
-    if(old_sbrk==(void*)-1)
-        return NULL;
-    else
-    {
-        //returns old sbreak, add block there
-        old_sbrk->size= size;
-        old_sbrk->is_free=1;
-        LIST_INSERT_AFTER(&block_list, blockInList, old_sbrk); //blockInList is now the last block in the list
-        return ++old_sbrk;
-    }
+	//returns old sbreak, add block there
+	old_sbrk->size= size;
+	old_sbrk->is_free=1;
+	LIST_INSERT_TAIL(&block_list, old_sbrk);
+	return ++old_sbrk;
+
 }
 //=========================================
 // [5] ALLOCATE BLOCK BY BEST FIT:
