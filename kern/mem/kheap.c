@@ -174,11 +174,47 @@ void* kmalloc(unsigned int size)
 	return allocated;
 }
 
+
+
 void kfree(void* virtual_address)
 {
+	//TODO: [PROJECT'23.MS2 - #04] [1] KERNEL HEAP - kfree()
+	//refer to the project presentation and documentation for details
+	// Write your code here, remove the panic and write your code
+
+	bool free = NULL ;
+
+	  //If virtual address inside the [PAGE ALLOCATOR] range
+	   //FREE the space of the given address from RAM
+	 if (virtual_address <= (void*) KERNEL_HEAP_MAX && virtual_address>= (void*)hard_limit+PAGE_SIZE ){
+			///from virtual to physical
+		 unsigned int pa = kheap_physical_address();
+
+			 struct Frame_Info *ptr_frame_into = to_frame_info(pa);
+			///insert in free frame list and un map
+			 free_frame(ptr_frame_into);
+			 unmap_frame(ptr_page_directory,virtual_address);
+
+	 }
+
+	  //If virtual address inside the [BLOCK ALLOCATOR] range
+	   //Use dynamic allocator to free the given address
+	if(virtual_address >= (void*) KERNEL_HEAP_START &&  virtual_address<= (void*)hard_limit )
+	 {
+		free_block(virtual_address);
+	 }
+
+	  //if outside the [PAGE ALLOCATOR] range and the [BLOCK ALLOCATOR] range
+	   // should panic(…)
+	 else {
+		 panic("invalid address");
+	 }
 
 
+
+	//panic("kfree() is not implemented yet...!!");
 }
+
 
 unsigned int kheap_virtual_address(unsigned int physical_address)
 {
