@@ -34,6 +34,7 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 	{
 		allocate_frame(&frame);
 		map_frame(ptr_page_directory, frame,  page, PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
+		frame->va = page;
 	}
 
 
@@ -85,6 +86,7 @@ void* sbrk(int increment)
 		{
 			allocate_frame(&frame);
 			map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_WRITEABLE);
+			frame->va = va;
 			va +=PAGE_SIZE;
 		}
 		segment_break=va;
@@ -167,6 +169,7 @@ void* kmalloc(unsigned int size)
 		frame = NULL;
 		allocate_frame(&frame);
 		map_frame(ptr_page_directory, frame,  (va + (PAGE_SIZE * i)), PERM_PRESENT | PERM_WRITEABLE);
+		frame->va = (va + (PAGE_SIZE * i));
 	}
 	return allocated;
 }
@@ -223,35 +226,23 @@ unsigned int kheap_virtual_address(unsigned int physical_address)
 	//TODO: [PROJECT'23.MS2 - #05] [1] KERNEL HEAP - kheap_virtual_address()
 	//refer to the project presentation and documentation for details
 	// Write your code here, remove the panic and write your code
-	//panic("kheap_virtual_address() is not implemented yet...!!");
-/*
-	//EFFICIENT IMPLEMENTATION ~O(1) IS REQUIRED ==================
-	struct FrameInfo* frame = (struct FrameInfo*) physical_address;
-	return frame->va;
-	//unsigned int offset = PGOFF(physical_address);
 
-	if(physical_address<KERNEL_HEAP_START)
-	{
+//	uint32 offset= physical_address%PAGE_SIZE;
+//	physical_address-=offset;
+//	physical_address=physical_address << PGSHIFT;
+	//change this "return" according to your answer
+
+	unsigned int offset = PGOFF(physical_address);
+	struct FrameInfo* frame = to_frame_info(physical_address);
+	if(frame == NULL)
 		return 0;
-	}
-	else if(physical_address<hard_limit)
-	{
-		return
-	}
-	else if(physical_address<=KERNEL_HEAP_MAX)
-	{
-
-	}
+	if(frame->references == 0)
+		return 0;
 	else
 	{
-
+		return frame->va + offset;
 	}
-	*/
-	uint32 offset= physical_address%PAGE_SIZE;
-	physical_address-=offset;
-	physical_address=physical_address << PGSHIFT;
-	//change this "return" according to your answer
-	return 0;
+
 }
 
 unsigned int kheap_physical_address(unsigned int virtual_address)
