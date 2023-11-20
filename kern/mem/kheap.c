@@ -5,6 +5,8 @@
 #include "memory_manager.h"
 
 
+int virtual_addresses_sizes[((KERNEL_HEAP_MAX-KERNEL_HEAP_START)/PAGE_SIZE)] = {0};
+
 int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate, uint32 daLimit)
 {
 	//TODO: [PROJECT'23.MS2 - #01] [1] KERNEL HEAP - initialize_kheap_dynamic_allocator()
@@ -22,7 +24,7 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 	hard_limit = daLimit;
 
 	//handle: "if no memory found" ???
-	if(initSizeToAllocate > daLimit - daStart)
+	if(initSizeToAllocate > daLimit - daStart )
 		return E_NO_MEM;
 
 	/*Requirement 2: All pages within space should be allocated and mapped*/
@@ -30,10 +32,9 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 	struct FrameInfo *frame;
 	for(page = daStart; page<segment_break;page+=PAGE_SIZE)
 	{
-
 		allocate_frame(&frame);
 		map_frame(ptr_page_directory, frame,  page, PERM_PRESENT | PERM_USER | PERM_WRITEABLE);
-
+		frame->va = page;
 	}
 
 
@@ -85,6 +86,7 @@ void* sbrk(int increment)
 		{
 			allocate_frame(&frame);
 			map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_WRITEABLE);
+			frame->va = va;
 			va +=PAGE_SIZE;
 		}
 		segment_break=va;
@@ -129,8 +131,6 @@ void* kmalloc(unsigned int size)
 	if(size<=DYN_ALLOC_MAX_BLOCK_SIZE)
 		return alloc_block_FF(size);
 
-
-
 	//check if there is sufficient space
 	for(uint32 page = (hard_limit + PAGE_SIZE); page <KERNEL_HEAP_MAX; page = (page + PAGE_SIZE))
 	{
@@ -160,65 +160,102 @@ void* kmalloc(unsigned int size)
 	{
 		return NULL;
 	}
-
+	int index = ((va-KERNEL_HEAP_START)/PAGE_SIZE);
+	virtual_addresses_sizes[index] = numOfPages;
 	//allocate and map then return va
+	//virtual_addresses_sizes[(int)va] = numOfPages;
 	for(uint32 i = 0; i<numOfPages; i++)
 	{
 		frame = NULL;
 		allocate_frame(&frame);
 		map_frame(ptr_page_directory, frame,  (va + (PAGE_SIZE * i)), PERM_PRESENT | PERM_WRITEABLE);
+		frame->va = (va + (PAGE_SIZE * i));
 	}
 	return allocated;
 }
+
+
 
 void kfree(void* virtual_address)
 {
 	//TODO: [PROJECT'23.MS2 - #04] [1] KERNEL HEAP - kfree()
 	//refer to the project presentation and documentation for details
 	// Write your code here, remove the panic and write your code
-	panic("kfree() is not implemented yet...!!");
+
+	uint32 va = (uint32) virtual_address;
+	  //If virtual address inside the [PAGE ALLOCATOR] range
+	   //FREE the space of the given address from RAM
+	 if (va < KERNEL_HEAP_MAX && va>= hard_limit+PAGE_SIZE )
+	 {
+
+		 va=ROUNDDOWN(va,PAGE_SIZE);
+			///from virtual to physical
+		 	 uint32 index = (va-KERNEL_HEAP_START)/PAGE_SIZE;
+		 	 uint32 numOfPages = virtual_addresses_sizes[index];
+		 	 for(int i= 0; i< numOfPages; i++)
+		 	 {
+		 		 unmap_frame(ptr_page_directory,va);
+		 		 va+=PAGE_SIZE;
+		 	 }
+
+		 	virtual_addresses_sizes[index]=0;
+	 }
+
+	  //If virtual address inside the [BLOCK ALLOCATOR] range
+	   //Use dynamic allocator to free the given address
+	 else if(va >= KERNEL_HEAP_START &&  va< hard_limit )
+	 {
+
+		free_block(virtual_address);
+	 }
+
+	  //if outside the [PAGE ALLOCATOR] range and the [BLOCK ALLOCATOR] range
+	   // should panic(…)
+	 else {
+		 panic("invalid address");
+	 }
+
+
+
+	//panic("kfree() is not implemented yet...!!");
 }
+
 
 unsigned int kheap_virtual_address(unsigned int physical_address)
 {
 	//TODO: [PROJECT'23.MS2 - #05] [1] KERNEL HEAP - kheap_virtual_address()
 	//refer to the project presentation and documentation for details
 	// Write your code here, remove the panic and write your code
-	//panic("kheap_virtual_address() is not implemented yet...!!");
 
-	//EFFICIENT IMPLEMENTATION ~O(1) IS REQUIRED ==================
-	struct FrameInfo* frame = (struct FrameInfo*) physical_address;
-	return frame->va;
-	//unsigned int offset = PGOFF(physical_address);
-/*
-	if(physical_address<=segment_break)
-	{
-		return physical_address+start;
-	}
-	else if(physical_address<=hard_limit)
-	{
+//	uint32 offset= physical_address%PAGE_SIZE;
+//	physical_address-=offset;
+//	physical_address=physical_address << PGSHIFT;
+	//change this "return" according to your answer
 
-	}
-	else if(physical_address<=KERNEL_HEAP_MAX)
-	{
-
-	}
+	unsigned int offset = PGOFF(physical_address);
+	struct FrameInfo* frame = to_frame_info(physical_address);
+	if(frame == NULL)
+		return 0;
+	if(frame->references == 0)
+		return 0;
 	else
 	{
-
+		return frame->va + offset;
 	}
-	*/
 
+<<<<<<< HEAD
 
 	//change this "return" according to your answer
 	return 0;
+=======
+>>>>>>> kheap_allocator
 }
 
 unsigned int kheap_physical_address(unsigned int virtual_address)
 {
 	//EFFICIENT IMPLEMENTATION ~O(1) IS REQUIRED ==================
-
-	uint32 *ptr_page_table = NULL;
+/*
+	uint32 *ptr_page_table = NULL;b
 	uint32 page_table_dir = PDX(virtual_address);
 	unsigned int page_table_index = PTX(virtual_address);
 	unsigned int offset = PGOFF(virtual_address);
@@ -228,16 +265,22 @@ unsigned int kheap_physical_address(unsigned int virtual_address)
 	get_page_table(ptr_page_directory, (uint32)virtual_address, &ptr_page_table);
 	if(ptr_page_table != NULL)
 	{
-		physical_address = (ptr_page_table[page_table_index]+offset)&(0xFFFFF000);
+		physical_address = (ptr_page_table[page_table_index]&(0xFFFFF000))+offset;
 	}
-	return physical_address;
-	/*
-	============== Alternative solution? =================================
+	return to_physical_address((void*)physical_address);
 
-	struct FrameInfo* frame = (struct FrameInfo*) virtual_address; WRONG
-	return to_physical_address(frame);
-	==========================================
-	*/
+*/
+	struct FrameInfo* frame = NULL;
+	uint32 *ptr_page_table = NULL;
+	unsigned int offset = PGOFF(virtual_address);
+	virtual_address =ROUNDDOWN(virtual_address, PAGE_SIZE);
+	frame = get_frame_info(ptr_page_directory,virtual_address,&ptr_page_table);
+
+	if(frame!=(void*)0)
+	{
+		return (unsigned int)to_physical_address(frame)+offset;
+	}
+	return 0;
 }
 
 
