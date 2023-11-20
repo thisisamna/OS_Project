@@ -382,13 +382,11 @@ void fault_handler(struct Trapframe *tf)
 			//Page->virtual_address=fault_va;
 			//if(Page->sweeps_counter==0)
 			//	return;
-			cprintf("Validating \n");
 			uint32 index=(fault_va-KERNEL_HEAP_START)/PAGE_SIZE;
 			uint32 array[100];
 			int invalid = 0;
 			if(fault_va<=KERNEL_HEAP_MAX && fault_va >=KERNEL_HEAP_START)
 				invalid = 1;
-			cprintf("1st case passed \n");
 
 			int perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
 			if(!(perms & PERM_WRITEABLE) || !(perms & PERM_USED))
@@ -397,16 +395,13 @@ void fault_handler(struct Trapframe *tf)
 //			if(fault_va<=USER_TOP && fault_va>= USER_LIMIT)  //read only region
 //				invalid = 1;
 
-			cprintf("2nd case passed \n");
 
 			if(array[index]<0)
 				invalid = 1;
 
-			cprintf("3rd case passed \n");
 
 			if(invalid)
 				sched_kill_env(faulted_env->env_id);
-			cprintf("4th case passed \n");
 
 
 			/*============================================================================================*/
