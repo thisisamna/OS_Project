@@ -243,12 +243,8 @@ unsigned int kheap_virtual_address(unsigned int physical_address)
 		return frame->va + offset;
 	}
 
-<<<<<<< HEAD
-
-	//change this "return" according to your answer
 	return 0;
-=======
->>>>>>> kheap_allocator
+
 }
 
 unsigned int kheap_physical_address(unsigned int virtual_address)
