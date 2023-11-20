@@ -21,7 +21,13 @@ inline struct WorkingSetElement* env_page_ws_list_create_element(struct Env* e, 
 	cprintf("In create element");
 	    struct WorkingSetElement* newElement = (struct WorkingSetElement*) e;
 	    newElement->virtual_address = virtual_address;
-
+		uint32 wsSize = LIST_SIZE(&(e->page_WS_list));
+	    wsSize++;
+	    struct WorkingSetElement* Next = LIST_NEXT(newElement);
+	    if(wsSize < (e->page_WS_max_size))
+	    	e->page_last_WS_element=NULL;
+	    else
+	    	e->page_last_WS_element=Next;
 	    //newElement->empty = 0;
 		cprintf("DONE \n");
 

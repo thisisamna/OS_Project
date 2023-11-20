@@ -92,7 +92,7 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 
 		uint32 * page_table;
 		struct FrameInfo *ptr_frame_info = get_frame_info(curenv->env_page_directory,fault_va,&page_table);
-		allocate_frame(ptr_frame_info);
+		allocate_frame(&ptr_frame_info);
 		void* va= (void*)fault_va;
 		int ret = pf_read_env_page(curenv,va);
 		if (ret == E_PAGE_NOT_EXIST_IN_PF)
@@ -104,6 +104,8 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 			else
 				sched_kill_env(curenv->env_id);
 		}
+
+		env_page_ws_list_create_element(curenv, fault_va);
 
 		//refer to the project presentation and documentation for details
 	}

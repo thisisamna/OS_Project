@@ -383,7 +383,8 @@ void fault_handler(struct Trapframe *tf)
 			//if(Page->sweeps_counter==0)
 			//	return;
 			cprintf("Validating \n");
-
+			uint32 index=(fault_va-KERNEL_HEAP_START)/PAGE_SIZE;
+			uint32 array[100];
 			int invalid = 0;
 			if(fault_va<=KERNEL_HEAP_MAX && fault_va >=KERNEL_HEAP_START)
 				invalid = 1;
@@ -398,9 +399,15 @@ void fault_handler(struct Trapframe *tf)
 
 			cprintf("2nd case passed \n");
 
+			if(array[index]<0)
+				invalid = 1;
+
+			cprintf("3rd case passed \n");
+
 			if(invalid)
 				sched_kill_env(faulted_env->env_id);
-			cprintf("3rd case passed \n");
+			cprintf("4th case passed \n");
+
 
 			/*============================================================================================*/
 		}
