@@ -385,13 +385,17 @@ void fault_handler(struct Trapframe *tf)
 			cprintf("Validating \n");
 
 			int invalid = 0;
-			if(fault_va<=KERNEL_HEAP_MAX || fault_va >=KERNEL_HEAP_START)
+			if(fault_va<=KERNEL_HEAP_MAX && fault_va >=KERNEL_HEAP_START)
 				invalid = 1;
 			cprintf("1st case passed \n");
 
 			int perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
 			if(!(perms & PERM_WRITEABLE) || !(perms & PERM_USED))
 				invalid = 1;
+
+//			if(fault_va<=USER_TOP && fault_va>= USER_LIMIT)  //read only region
+//				invalid = 1;
+
 			cprintf("2nd case passed \n");
 
 			if(invalid)

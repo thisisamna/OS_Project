@@ -90,6 +90,21 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 		// Write your code here, remove the panic and write your code
 		//panic("page_fault_handler().PLACEMENT is not implemented yet...!!");
 
+		uint32 * page_table;
+		struct FrameInfo *ptr_frame_info = get_frame_info(curenv->env_page_directory,fault_va,&page_table);
+		allocate_frame(ptr_frame_info);
+		void* va= (void*)fault_va;
+		int ret = pf_read_env_page(curenv,va);
+		if (ret == E_PAGE_NOT_EXIST_IN_PF)
+		{
+			if((fault_va<= USER_HEAP_START && fault_va>= USER_HEAP_MAX) || (fault_va<= USTACKBOTTOM && fault_va>= USTACKTOP))
+			{
+				int ret = pf_update_env_page(curenv, fault_va, ptr_frame_info);
+			}
+			else
+				sched_kill_env(curenv->env_id);
+		}
+
 		//refer to the project presentation and documentation for details
 	}
 	else

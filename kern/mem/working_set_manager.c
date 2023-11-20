@@ -21,6 +21,7 @@ inline struct WorkingSetElement* env_page_ws_list_create_element(struct Env* e, 
 	cprintf("In create element");
 	    struct WorkingSetElement* newElement = (struct WorkingSetElement*) e;
 	    newElement->virtual_address = virtual_address;
+
 	    //newElement->empty = 0;
 		cprintf("DONE \n");
 

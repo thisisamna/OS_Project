@@ -56,7 +56,15 @@ void free(void* virtual_address)
 {
 	//TODO: [PROJECT'23.MS2 - #11] [2] USER HEAP - free() [User Side]
 	// Write your code here, remove the panic and write your code
-	panic("free() is not implemented yet...!!");
+	//panic("free() is not implemented yet...!!");
+//	if(virtual_address >= KERNEL_HEAP_START && virtual_address<= HARD_LIMIT)
+//	{
+//		free_block(virtual_address);
+//	}
+//	if(virtual_address >=(HARD_LIMIT + PAGE_SIZE) && virtual_address<=KERNEL_HEAP_MAX)
+//	{
+//
+//	}
 }
 
 
