@@ -175,7 +175,6 @@ void* kmalloc(unsigned int size)
 
 void kfree(void* virtual_address)
 {
-	/*
     //TODO: [PROJECT'23.MS2 - #04] [1] KERNEL HEAP - kfree()
     //refer to the project presentation and documentation for details
     // Write your code here, remove the panic and write your code
@@ -184,14 +183,16 @@ void kfree(void* virtual_address)
 
       //If virtual address inside the [PAGE ALLOCATOR] range
        //FREE the space of the given address from RAM
-     if (virtual_address <= (void*) KERNEL_HEAP_MAX && virtual_address>= (void*)hard_limit+PAGE_SIZE ){
+    uint32 VA =(void*)virtual_address;
+     if (VA <=  KERNEL_HEAP_MAX && VA>= (void*)hard_limit+PAGE_SIZE ){
             ///from virtual to physical
-         unsigned int pa = kheap_physical_address();
+         unsigned int pa = kheap_physical_address(virtual_address);
 
              struct Frame_Info *ptr_frame_into = to_frame_info(pa);
             ///insert in free frame list and un map
-             free_frame(ptr_frame_into);
-             unmap_frame(ptr_page_directory,virtual_address);
+             unmap_frame(&ptr_page_directory,virtual_address);
+             free_frame(&ptr_frame_into);
+
 
      }
 
@@ -208,9 +209,9 @@ void kfree(void* virtual_address)
          panic("invalid address");
      }
 
-*/
 
-    panic("kfree() is not implemented yet...!!");
+
+    //panic("kfree() is not implemented yet...!!");
 }
 
 unsigned int kheap_virtual_address(unsigned int physical_address)
@@ -310,21 +311,44 @@ void *krealloc(void *virtual_address, uint32 new_size)
 {
 	//TODO: [PROJECT'23.MS2 - BONUS#1] [1] KERNEL HEAP - krealloc()
 	// Write your code here, remove the panic and write your code
+	uint32 VA =(void*)virtual_address;
+	if (VA <=  KERNEL_HEAP_MAX && VA>=hard_limit+PAGE_SIZE ){
+		int index = ((VA-KERNEL_HEAP_START)/PAGE_SIZE);
+		uint32 cureent_size=(uint32)virtual_addresses_sizes[index];
+		if(new_size<=cureent_size){
+
+		}
+
+		if(new_size>cureent_size){
+			uint32 lenth=new_size-cureent_size;
+			////////
+			for(int i=0; i<lenth/PAGE_SIZE;i++)
+					{
+				allocate_frame(&frame);
+				map_frame(ptr_page_directory, frame,  VA, PERM_PRESENT | PERM_WRITEABLE);
+				VA +=PAGE_SIZE;
+					}
+		}
+
 
 	//(1)handling the special cases
     if (virtual_address == NULL)
     {
     	return kmalloc(new_size); //alloc_FF(n) in case of realloc_block_FF(null, new_size), and size=0 handled in alloc
-
     }
-
     if (new_size == 0)
     {
        kfree(virtual_address); //to free(va) in case of realloc_block_FF(va,0)
         return NULL;
     }
 
-
+	}
+	//If virtual address inside the [BLOCK ALLOCATOR] range
+	       //Use dynamic allocator to realloc new size
+	if(VA >=KERNEL_HEAP_START &&  VA<= hard_limit )
+	     {
+		realloc(virtual_address,  new_size);
+	     }
 	return NULL;
 	//panic("krealloc() is not implemented yet...!!");
 }
