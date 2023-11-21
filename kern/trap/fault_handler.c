@@ -92,10 +92,12 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 
 		uint32 * page_table;
 		struct FrameInfo *ptr_frame_info = get_frame_info(curenv->env_page_directory,fault_va,&page_table);
+		int perms = pt_get_page_permissions(curenv->env_page_directory, fault_va);
 
 		if(ptr_frame_info != NULL)
 		{
 		allocate_frame(&ptr_frame_info);
+		map_frame((curenv->env_page_directory),ptr_frame_info,fault_va,perms);
 		}
 
 		void* va= (void*)fault_va;

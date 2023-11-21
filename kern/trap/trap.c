@@ -382,22 +382,23 @@ void fault_handler(struct Trapframe *tf)
 			//Page->virtual_address=fault_va;
 			//if(Page->sweeps_counter==0)
 			//	return;
-			uint32 index=(fault_va-KERNEL_HEAP_START)/PAGE_SIZE;
-			uint32 array[100];
+
+//			uint32 index=(fault_va-KERNEL_HEAP_START)/PAGE_SIZE;
+//			uint32 array[100];
 			int invalid = 0;
 			if(fault_va<=KERNEL_HEAP_MAX && fault_va >=KERNEL_HEAP_START)
 				invalid = 1;
 
 			int perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
-			if(!(perms & PERM_WRITEABLE) || !(perms & PERM_USED))
+			if(!(perms & PERM_WRITEABLE))
 				invalid = 1;
 
 //			if(fault_va<=USER_TOP && fault_va>= USER_LIMIT)  //read only region
 //				invalid = 1;
 
 
-			if(array[index]<0)
-				invalid = 1;
+//			if(array[index]<0)
+//				invalid = 1;
 
 
 			if(invalid)
