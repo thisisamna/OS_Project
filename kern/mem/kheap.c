@@ -160,6 +160,10 @@ void* kmalloc(unsigned int size)
 	{
 		return NULL;
 	}
+	if(numOfPagesFound > free_frame_list->size)
+	{
+		return NULL;
+	}
 	int index = ((va-KERNEL_HEAP_START)/PAGE_SIZE);
 	virtual_addresses_sizes[index] = numOfPages;
 	//allocate and map then return va
