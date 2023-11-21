@@ -27,17 +27,18 @@ inline struct WorkingSetElement* env_page_ws_list_create_element(struct Env* e, 
 	if(e->page_last_WS_element==NULL)
 	{
 
-	    struct WorkingSetElement* newElement = (struct WorkingSetElement*) virtual_address;
+		struct WorkingSetElement* newElement = (struct WorkingSetElement*) e;
+	    //struct WorkingSetElement* newElement = (struct WorkingSetElement*) virtual_address;
 	    newElement->virtual_address = virtual_address;
-	    LIST_INSERT_TAIL(e->page_WS_list,newElement);
+	    LIST_INSERT_TAIL(&(e->page_WS_list),newElement);
 		uint32 wsSize = LIST_SIZE(&(e->page_WS_list));
 		struct WorkingSetElement* HEAD = LIST_FIRST(&(e->page_WS_list));
 	    struct WorkingSetElement* Next = LIST_NEXT(newElement);
 	    if(wsSize < (e->page_WS_max_size))
 	    	e->page_last_WS_element=NULL;
 	    else
-	    	e->page_last_WS_element=HEAD;
-	    	//e->page_last_WS_element=Next;
+	    	//e->page_last_WS_element=HEAD;
+	    	e->page_last_WS_element=Next;
 
 	    return newElement;
 	}

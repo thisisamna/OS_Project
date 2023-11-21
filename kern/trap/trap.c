@@ -383,8 +383,8 @@ void fault_handler(struct Trapframe *tf)
 			//if(Page->sweeps_counter==0)
 			//	return;
 
-//			uint32 index=(fault_va-KERNEL_HEAP_START)/PAGE_SIZE;
-//			uint32 array[100];
+			uint32 index=(fault_va-KERNEL_HEAP_START)/PAGE_SIZE;
+			uint32 array[100];
 			int invalid = 0;
 			if(fault_va<=KERNEL_HEAP_MAX && fault_va >=KERNEL_HEAP_START)
 				invalid = 1;
@@ -397,8 +397,8 @@ void fault_handler(struct Trapframe *tf)
 //				invalid = 1;
 
 
-//			if(array[index]<0)
-//				invalid = 1;
+			if(array[index]<0)
+				invalid = 1;
 
 
 			if(invalid)
