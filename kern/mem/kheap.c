@@ -23,6 +23,7 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 	segment_break = daStart +initSizeToAllocate;
 	hard_limit = daLimit;
 
+
 	//handle: "if no memory found" ???
 	if(initSizeToAllocate > daLimit - daStart )
 		return E_NO_MEM;
