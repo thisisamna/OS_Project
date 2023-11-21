@@ -29,7 +29,7 @@ inline struct WorkingSetElement* env_page_ws_list_create_element(struct Env* e, 
 
 	    struct WorkingSetElement* newElement = (struct WorkingSetElement*) virtual_address;
 	    newElement->virtual_address = virtual_address;
-	    LIST_INSERT_TAIL(e->page_WS_list,newElement);
+	    LIST_INSERT_TAIL(&(e->page_WS_list),newElement);
 		uint32 wsSize = LIST_SIZE(&(e->page_WS_list));
 		struct WorkingSetElement* HEAD = LIST_FIRST(&(e->page_WS_list));
 	    struct WorkingSetElement* Next = LIST_NEXT(newElement);
