@@ -386,7 +386,7 @@ void fault_handler(struct Trapframe *tf)
 			uint32 index=(fault_va-USER_HEAP_START)/PAGE_SIZE;
 			//uint32 array[100];
 			int invalid = 0;
-			if(fault_va<KERNEL_HEAP_MAX && fault_va >=KERNEL_HEAP_START)
+			if(fault_va>=USER_LIMIT)
 				invalid = 1;
 
 			int perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
