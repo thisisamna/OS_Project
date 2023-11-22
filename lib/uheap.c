@@ -42,8 +42,43 @@ void* malloc(uint32 size)
 	//==============================================================
 	//TODO: [PROJECT'23.MS2 - #09] [2] USER HEAP - malloc() [User Side]
 	// Write your code here, remove the panic and write your code
-	panic("malloc() is not implemented yet...!!");
-	return NULL;
+	void * allocated;
+	if(size < DYN_ALLOC_MAX_BLOCK_SIZE)
+		return alloc_block_FF(size);
+
+	else
+	{
+		uint32* ptr_page_table = NULL;
+		int numOfPagesFound = 0;
+		int numOfPages = (ROUNDUP(size,PAGE_SIZE))/PAGE_SIZE;
+		uint32 va;
+		for(uint32 page = (hard_limit + PAGE_SIZE); page <USER_HEAP_MAX; page = (page + PAGE_SIZE))
+		{
+			ptr_page_table = NULL;
+			if(get_frame_info(ptr_page_directory, page, &ptr_page_table) == 0)
+			{
+				if(numOfPagesFound==0)
+					va=page;
+
+				numOfPagesFound++;
+				if(numOfPagesFound == numOfPages)
+				{
+					allocated = (void*) va;
+					sys_allocate_user_mem(va, size); //should i loop?
+					break;
+				}
+			}
+
+			else
+			{
+				va=0;
+				numOfPagesFound = 0;
+			}
+		}
+
+
+	}
+	return allocated;
 	//Use sys_isUHeapPlacementStrategyFIRSTFIT() and	sys_isUHeapPlacementStrategyBESTFIT()
 	//to check the current strategy
 
