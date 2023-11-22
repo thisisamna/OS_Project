@@ -113,15 +113,16 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 				sched_kill_env(curenv->env_id);
 			}
 		}
+		struct WorkingSetElement *newElement= env_page_ws_list_create_element(curenv, fault_va);
+		LIST_INSERT_TAIL(&(curenv->page_WS_list),newElement);
+		if(wsSize+1 < (curenv->page_WS_max_size))
+			curenv->page_last_WS_element = NULL;
 		else
 		{
-			LIST_INSERT_TAIL(&(curenv->page_WS_list),env_page_ws_list_create_element(curenv, fault_va));
-			if(wsSize+1 < (curenv->page_WS_max_size))
-				curenv->page_last_WS_element = LIST_NEXT(curenv->page_last_WS_element);
-			else
-				curenv->page_last_WS_element = NULL;
-			//refer to the project presentation and documentation for details
+			curenv->page_last_WS_element=newElement;
 		}
+		//refer to the project presentation and documentation for details
+
 	}
 	else
 	{

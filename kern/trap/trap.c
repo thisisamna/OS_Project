@@ -392,8 +392,8 @@ void fault_handler(struct Trapframe *tf)
 			}
 
 
-//			if(fault_va<=USER_TOP && fault_va>= USER_LIMIT)  //read only region
-//				invalid = 1;
+			if(fault_va<=USER_TOP && fault_va>= USER_LIMIT)  //read only region
+				invalid = 1;
 
 			if(fault_va>=USER_HEAP_START&&fault_va<USER_HEAP_MAX){
 				if(faulted_env->virtual_addresses_sizes[index]<=0)
