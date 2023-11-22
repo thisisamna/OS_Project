@@ -387,23 +387,31 @@ void fault_handler(struct Trapframe *tf)
 			//uint32 array[100];
 			int invalid = 0;
 			if(fault_va>=USER_LIMIT)
+			{
 				invalid = 1;
+			}
 
-			int perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
-			if(!(perms & PERM_WRITEABLE))
-				invalid = 1;
 
 //			if(fault_va<=USER_TOP && fault_va>= USER_LIMIT)  //read only region
 //				invalid = 1;
 
+			if(fault_va>=USER_HEAP_START&&fault_va<USER_HEAP_MAX){
+				if(faulted_env->virtual_addresses_sizes[index]<=0)
+				{
+					invalid = 1;
+				}
+			}
+			int perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
 
-			if(faulted_env->virtual_addresses_sizes[index]<=0)
+			if (perms & PERM_PRESENT)
+			{
 				invalid = 1;
-
+			}
 
 			if(invalid)
+			{
 				sched_kill_env(faulted_env->env_id);
-
+			}
 
 			/*============================================================================================*/
 		}

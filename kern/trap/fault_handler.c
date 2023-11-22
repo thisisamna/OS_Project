@@ -100,6 +100,7 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 
 		void* va= (void*)fault_va;
 		int ret = pf_read_env_page(curenv,va);
+
 		if (ret == E_PAGE_NOT_EXIST_IN_PF)
 		{
 			if((fault_va>= USER_HEAP_START && fault_va< USER_HEAP_MAX) || (fault_va>= USTACKBOTTOM && fault_va< USTACKTOP))
