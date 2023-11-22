@@ -89,7 +89,7 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 		//TODO: [PROJECT'23.MS2 - #15] [3] PAGE FAULT HANDLER - Placement
 		// Write your code here, remove the panic and write your code
 		//panic("page_fault_handler().PLACEMENT is not implemented yet...!!");
-
+		cprintf("Run\n");
 		uint32 * page_table;
 		struct FrameInfo *ptr_frame_info = get_frame_info(curenv->env_page_directory,fault_va,&page_table);
 		//int perms = pt_get_page_permissions(curenv->env_page_directory, fault_va);
@@ -108,11 +108,18 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 				//wala 7aga :D
 			}
 			else
+			{
+				cprintf("Im killing u tpp");
 				sched_kill_env(curenv->env_id);
+				return;
+			}
 		}
 
-		env_page_ws_list_create_element(curenv, fault_va);
-
+		LIST_INSERT_TAIL(&(curenv->page_WS_list),env_page_ws_list_create_element(curenv, fault_va));
+		if(wsSize+1 < (curenv->page_WS_max_size))
+			curenv->page_last_WS_element = LIST_NEXT(curenv->page_last_WS_element);
+		else
+			curenv->page_last_WS_element = NULL;
 		//refer to the project presentation and documentation for details
 	}
 	else
