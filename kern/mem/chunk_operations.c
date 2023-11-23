@@ -136,14 +136,31 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 	/*==========================================================================*/
 	//TODO: [PROJECT'23.MS2 - #12] [2] USER HEAP - free_user_mem() [Kernel Side]
 	/*REMOVE THESE LINES BEFORE START CODING */
+	//Unmark the given range && Free ONLY pages that are resident in the working set from the memor
+	uint32 index =((virtual_address-USER_HEAP_START)/PAGE_SIZE);
+	int count =virtual_addresses_sizes[index];
+	uint32 *ptr_page_table = NULL;
+	for(int i =0 ;i<count;i++){
+	if(virtual_addresses_sizes[index]!=0){
+		if(get_frame_info(ptr_page_directory,virtual_address, &ptr_page_table)!=0){
+			unmap_frame(ptr_page_directory,virtual_address);
+		}
+		pf_remove_env_page(e,virtual_address); //Free ALL pages of the given range from the Page File
+		env_page_ws_invalidate(e,virtual_address); //Free ONLY pages that are resident in the working set from the memor
+
+		virtual_addresses_sizes[index]=0;
+		++index;
+	}
+}
 	inctst();
 	return;
 	/*==========================================================================*/
 
 	// Write your code here, remove the panic and write your code
-	panic("free_user_mem() is not implemented yet...!!");
+	//panic("free_user_mem() is not implemented yet...!!");
 
 	//TODO: [PROJECT'23.MS2 - BONUS#2] [2] USER HEAP - free_user_mem() IN O(1): removing page from WS List instead of searching the entire list
+
 
 }
 

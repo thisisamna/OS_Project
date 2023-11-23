@@ -101,6 +101,7 @@ struct Env {
 	//2016
 	unsigned int disk_env_pgdir_PA;
 
+
 	//for table file management
 	uint32* disk_env_tabledir;
 	//2016
