@@ -102,12 +102,11 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 
 			if ((fault_va >= USER_HEAP_START && fault_va < USER_HEAP_MAX) || (fault_va >= USTACKBOTTOM && fault_va < USTACKTOP))
 			{
-				pf_update_env_page(curenv, fault_va,ptr_frame_info );
+				//Wala 7aga
 			}
 			else
 			{
-				cprintf("Im killing u tpp");
-				sched_kill_env(curenv->env_id);
+				return;
 			}
 		}
 		struct WorkingSetElement *newElement= env_page_ws_list_create_element(curenv, fault_va);
