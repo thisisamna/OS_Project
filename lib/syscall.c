@@ -356,7 +356,7 @@ void sys_allocate_user_mem(uint32 virtual_address, uint32 size)
 	syscall(SYS_allocate_user_mem, (uint32) virtual_address, (uint32)size, 0, 0, 0);
 
 }
-uint32 sys_get_hard_limit(void)
+int sys_get_hard_limit(void)
 {
 
 	//Comment the following line before start coding...

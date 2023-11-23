@@ -394,16 +394,17 @@ void fault_handler(struct Trapframe *tf)
 
 			if(fault_va<=USER_TOP && fault_va>= USER_LIMIT)  //read only region
 				invalid = 1;
-
+/*
 			if(fault_va>=USER_HEAP_START&&fault_va<USER_HEAP_MAX){
 				if(faulted_env->virtual_addresses_sizes[index]<=0)
 				{
 					invalid = 1;
 				}
 			}
+			*/
 			int perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
 
-			if (perms & PERM_PRESENT)
+			if (perms & PERM_PRESENT || !(perms&PERM_AVAILABLE))
 			{
 				invalid = 1;
 			}

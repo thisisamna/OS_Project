@@ -54,11 +54,14 @@ void* malloc(uint32 size)
 		int numOfPagesFound = 0;
 		int numOfPages = (ROUNDUP(size,PAGE_SIZE))/PAGE_SIZE;
 		uint32 va;
+		uint32 index;
 		uint32 start = sys_get_hard_limit() + PAGE_SIZE;
 		for(uint32 page = start ; page <USER_HEAP_MAX; page = (page + PAGE_SIZE))
 		{
+			index = (page-USER_HEAP_START)/PAGE_SIZE;
+
 			ptr_page_table = NULL;
-			if(get_frame_info(curenv->env_page_directory, page, &ptr_page_table) == 0)
+			if(virtual_addresses_sizes[index] == 0)
 			{
 				if(numOfPagesFound==0)
 					va=page;
@@ -84,8 +87,6 @@ void* malloc(uint32 size)
 	return allocated;
 	//Use sys_isUHeapPlacementStrategyFIRSTFIT() and	sys_isUHeapPlacementStrategyBESTFIT()
 	//to check the current strategy
-
-	return NULL;
 }
 
 //=================================
