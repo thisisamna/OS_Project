@@ -85,14 +85,11 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 
 	if(wsSize < (curenv->page_WS_max_size))
 	{
-		cprintf("Adding element");
 		//cprintf("PLACEMENT=========================WS Size = %d\n", wsSize );
 		//TODO: [PROJECT'23.MS2 - #15] [3] PAGE FAULT HANDLER - Placement
 		// Write your code here, remove the panic and write your code
 		//panic("page_fault_handler().PLACEMENT is not implemented yet...!!");
-		//int perms = pt_get_page_permissions(curenv->env_page_directory, fault_va);
 		void* va= (void*)fault_va;
-
 		struct FrameInfo *ptr_frame_info=NULL;
 		allocate_frame(&ptr_frame_info);
 		map_frame(curenv->env_page_directory,ptr_frame_info,fault_va,PERM_PRESENT|PERM_USER|PERM_WRITEABLE);
@@ -114,12 +111,14 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 			}
 		}
 		struct WorkingSetElement *newElement= env_page_ws_list_create_element(curenv, fault_va);
-		LIST_INSERT_TAIL(&(curenv->page_WS_list),newElement);
-		if(wsSize+1 < (curenv->page_WS_max_size))
-			curenv->page_last_WS_element = NULL;
+		LIST_INSERT_TAIL(&(curenv->page_WS_list), newElement);
+		if (LIST_SIZE(&(curenv->page_WS_list)) == curenv->page_WS_max_size)
+		{
+			curenv->page_last_WS_element = LIST_FIRST(&(curenv->page_WS_list));
+		}
 		else
 		{
-			curenv->page_last_WS_element=newElement;
+			curenv->page_last_WS_element = NULL;
 		}
 		//refer to the project presentation and documentation for details
 

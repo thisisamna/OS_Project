@@ -16,14 +16,8 @@
 inline struct WorkingSetElement* env_page_ws_list_create_element(struct Env* e, uint32 virtual_address)
 {
 	//TODO: [PROJECT'23.MS2 - #14] [3] PAGE FAULT HANDLER - Create a new working set element
-	// Write your code here, remove the panic and write your code
+	// Write your code here, remove the panic and  write your code
 	//panic("env_page_ws_list_create_element() is not implemented yet...!!");
-
-	//cprintf("In create element");
-
-//	if(virtual_address==0)
-//		return 0;
-
 
 		struct WorkingSetElement* newElement = kmalloc(sizeof(struct WorkingSetElement));
 		if(newElement==NULL)
@@ -31,10 +25,6 @@ inline struct WorkingSetElement* env_page_ws_list_create_element(struct Env* e, 
 	    //struct WorkingSetElement* newElement = (struct WorkingSetElement*) virtual_address;
 	    newElement->virtual_address = virtual_address;
 	    return newElement;
-
-
-	//newElement->empty = 0;
-	//cprintf("DONE \n");
 
 
 }
