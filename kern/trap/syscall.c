@@ -335,6 +335,11 @@ int sys_getSemaphoreValue(int32 ownerEnvID, char* semaphoreName)
 	return semaphores[semID].value ;
 }
 
+int sys_get_hard_limit()
+{
+	return curenv->hard_limit;
+
+}
 /*******************************/
 /* SHARED MEMORY SYSTEM CALLS */
 /*******************************/
@@ -474,6 +479,7 @@ void sys_bypassPageFault(uint8 instrLength)
 
 
 
+
 /**********************************/
 /* DYNAMIC ALLOCATOR SYSTEM CALLS */
 /**********************************/
@@ -544,7 +550,7 @@ uint32 syscall(uint32 syscallno, uint32 a1, uint32 a2, uint32 a3, uint32 a4, uin
 		    break;
 	//=====================================================================
 	case SYS_get_hard_limit:
-		return curenv->hard_limit;
+		return (uint32)sys_get_hard_limit();
 		break;
 	case SYS_cputs:
 		sys_cputs((const char*)a1,a2,(uint8)a3);

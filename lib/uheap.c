@@ -16,6 +16,7 @@ void InitializeUHeap()
 		FirstTimeFlag = 0;
 	}
 }
+int virtual_addresses_sizes[((USER_HEAP_MAX-USER_HEAP_START)/PAGE_SIZE)]= {0};
 
 //==================================================================================//
 //============================ REQUIRED FUNCTIONS ==================================//
@@ -42,8 +43,7 @@ void* malloc(uint32 size)
 	//==============================================================
 	//TODO: [PROJECT'23.MS2 - #09] [2] USER HEAP - malloc() [User Side]
 	// Write your code here, remove the panic and write your code
-/*
-	struct Env* curenv = 0;//L7ad ma3raf agebha ezay
+
 	void * allocated;
 	if(size < DYN_ALLOC_MAX_BLOCK_SIZE)
 		return alloc_block_FF(size);
@@ -54,7 +54,8 @@ void* malloc(uint32 size)
 		int numOfPagesFound = 0;
 		int numOfPages = (ROUNDUP(size,PAGE_SIZE))/PAGE_SIZE;
 		uint32 va;
-		for(uint32 page = (curenv-> hard_limit + PAGE_SIZE); page <USER_HEAP_MAX; page = (page + PAGE_SIZE))
+		uint32 start = sys_get_hard_limit() + PAGE_SIZE;
+		for(uint32 page = start ; page <USER_HEAP_MAX; page = (page + PAGE_SIZE))
 		{
 			ptr_page_table = NULL;
 			if(get_frame_info(curenv->env_page_directory, page, &ptr_page_table) == 0)
@@ -83,7 +84,7 @@ void* malloc(uint32 size)
 	return allocated;
 	//Use sys_isUHeapPlacementStrategyFIRSTFIT() and	sys_isUHeapPlacementStrategyBESTFIT()
 	//to check the current strategy
-*/
+
 	return NULL;
 }
 

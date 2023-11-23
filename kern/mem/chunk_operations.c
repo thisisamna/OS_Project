@@ -11,7 +11,8 @@
 #include "memory_manager.h"
 #include <inc/queue.h>
 #include <kern/tests/utilities.h>
-
+//our includes
+#include "paging_helpers.h"
 //extern void inctst();
 
 /******************************/
@@ -129,7 +130,8 @@ void allocate_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 	uint32 numOfPages=size/PAGE_SIZE;
 	for(int i=0; i<numOfPages;i++)
 	{
-		pt_set_page_permissions(e, virtual_address, uint32 ,PERM_AVAILABLE, 0);
+
+		pt_set_page_permissions(e->env_page_directory, virtual_address ,PERM_AVAILABLE, 0);
 		virtual_address+=PAGE_SIZE;
 	}
 	return;
@@ -142,6 +144,8 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 	/*==========================================================================*/
 	//TODO: [PROJECT'23.MS2 - #12] [2] USER HEAP - free_user_mem() [Kernel Side]
 	/*REMOVE THESE LINES BEFORE START CODING */
+
+
 	inctst();
 	return;
 	/*==========================================================================*/

@@ -113,7 +113,6 @@ struct Env {
 	uint32 start;
 	uint32 segment_break;
 	uint32 hard_limit;
-	int virtual_addresses_sizes[((USER_HEAP_MAX-USER_HEAP_START)/PAGE_SIZE)];
 
 	//================
 	/*WORKING SET*/
