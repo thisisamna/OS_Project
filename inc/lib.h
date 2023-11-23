@@ -78,7 +78,8 @@ uint32 	sys_isUHeapPlacementStrategyBESTFIT();
 uint32 	sys_isUHeapPlacementStrategyNEXTFIT();
 uint32 	sys_isUHeapPlacementStrategyWORSTFIT();
 void 	sys_set_uheap_strategy(uint32 heapStrategy);
-int sys_get_hard_limit(void);
+uint32 sys_get_hard_limit(void);
+
 
 //Page File
 int 	sys_pf_calculate_allocated_pages(void);
