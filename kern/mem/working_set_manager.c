@@ -16,9 +16,17 @@
 inline struct WorkingSetElement* env_page_ws_list_create_element(struct Env* e, uint32 virtual_address)
 {
 	//TODO: [PROJECT'23.MS2 - #14] [3] PAGE FAULT HANDLER - Create a new working set element
-	// Write your code here, remove the panic and write your code
-	panic("env_page_ws_list_create_element() is not implemented yet...!!");
-	return NULL;
+	// Write your code here, remove the panic and  write your code
+	//panic("env_page_ws_list_create_element() is not implemented yet...!!");
+
+		struct WorkingSetElement* newElement = kmalloc(sizeof(struct WorkingSetElement));
+		if(newElement==NULL)
+			panic("Cant create environment\n");
+	    //struct WorkingSetElement* newElement = (struct WorkingSetElement*) virtual_address;
+	    newElement->virtual_address = virtual_address;
+	    return newElement;
+
+
 }
 inline void env_page_ws_invalidate(struct Env* e, uint32 virtual_address)
 {
