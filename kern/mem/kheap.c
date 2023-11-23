@@ -161,7 +161,7 @@ void* kmalloc(unsigned int size)
 	{
 		return NULL;
 	}
-	if(numOfPagesFound > free_frame_list->size)
+	if(numOfPagesFound > LIST_SIZE(&free_frame_list))
 	{
 		return NULL;
 	}
