@@ -71,7 +71,6 @@ void* sbrk(int increment)
 	uint32 old_segment_break= segment_break;
 	uint32 va = segment_break;
 
-	increment= ROUNDUP(increment, PAGE_SIZE);
 
 	if(increment==0)
 	{
@@ -79,6 +78,8 @@ void* sbrk(int increment)
 	}
 	else if(increment>0)
 	{
+		increment= ROUNDUP(increment, PAGE_SIZE);
+
 		if(va+increment>hard_limit)
 		{
 			panic("Exceeded limit");
@@ -96,7 +97,13 @@ void* sbrk(int increment)
 	}
 	else
 	{
-		increment*=-1;
+		if(segment_break-increment < start)// dynamic allocator region is negative size
+		{
+			panic("Cannot shrink space beyond size zero!");
+		}
+		segment_break-=increment;
+		increment= ROUNDDOWN(increment, PAGE_SIZE)*-1;
+
 		for(int i=0; i<increment/PAGE_SIZE;i++)
 		{
 			va -=PAGE_SIZE;
@@ -104,9 +111,8 @@ void* sbrk(int increment)
 			unmap_frame(ptr_page_directory,va);
 			free_frame(frame);
 		}
-		segment_break=va;
 
-		return (void*)va;
+		return (void*)segment_break;;
 	}
 
 	//panic("not implemented yet");

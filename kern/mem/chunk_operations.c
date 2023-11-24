@@ -133,10 +133,11 @@ void allocate_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 //=====================================
 void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 {
+
 	/*==========================================================================*/
 	//TODO: [PROJECT'23.MS2 - #12] [2] USER HEAP - free_user_mem() [Kernel Side]
-	/*REMOVE THESE LINES BEFORE START CODING */
 	//Unmark the given range && Free ONLY pages that are resident in the working set from the memor
+	/*
 	uint32 index =((virtual_address-USER_HEAP_START)/PAGE_SIZE);
 	int count =virtual_addresses_sizes[index];
 	uint32 *ptr_page_table = NULL;
@@ -152,6 +153,9 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 		++index;
 	}
 }
+*/
+	/*REMOVE THESE LINES BEFORE START CODING */
+
 	inctst();
 	return;
 	/*==========================================================================*/
