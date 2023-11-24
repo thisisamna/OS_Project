@@ -45,45 +45,60 @@ void* malloc(uint32 size)
 	//TODO: [PROJECT'23.MS2 - #09] [2] USER HEAP - malloc() [User Side]
 	// Write your code here, remove the panic and write your code
 
-	struct Env* curenv = 0;//L7ad ma3raf agebha ezay -- NOT USED BUT DO NOT DELETE!!
-	void * allocated;
-	int index;
-	if(size < DYN_ALLOC_MAX_BLOCK_SIZE)
-		return alloc_block_FF(size);
+	 struct Env* curenv = 0; // UNUSED BUT DO NOT DELETE!!
+		    void* allocated = NULL;
+		    int index;
 
-	else
-	{
-		int numOfPagesFound = 0;
-		int numOfPages = (ROUNDUP(size,PAGE_SIZE))/PAGE_SIZE;
-		uint32 va;
+		    if (size == 0)
+		        return NULL;
 
-		for(uint32 page = (sys_get_hard_limit() + PAGE_SIZE); page <USER_HEAP_MAX; page = (page + PAGE_SIZE))
-		{
-			index = (page - USER_HEAP_START)/PAGE_SIZE;
-			if(mapped[index] == 0)
-			{
-				if(numOfPagesFound==0)
-					va=page;
+		    if (size < DYN_ALLOC_MAX_BLOCK_SIZE)
+		    {
+		        return alloc_block_FF(size);
+		    }
+		    else
+		    {
+		        int numOfPagesFound = 0;
+		        int numOfPages = (ROUNDUP(size, PAGE_SIZE)) / PAGE_SIZE;
+		        uint32 va = 0;
 
-				numOfPagesFound++;
-				if(numOfPagesFound == numOfPages)
-				{
-					allocated = (void*) va;
-					sys_allocate_user_mem(va, size); //should i loop?
-					break;
-				}
-			}
+		        if (sys_isUHeapPlacementStrategyFIRSTFIT() > 0)
+		        {
+		            for (uint32 page = (sys_get_hard_limit() + PAGE_SIZE); page < USER_HEAP_MAX; page = (page + PAGE_SIZE))
+		            {
+		                index = (page - USER_HEAP_START) / PAGE_SIZE;
+		                if (mapped[index] == 0)
+		                {
 
-			else
-			{
-				va=0;
-				numOfPagesFound = 0;
-			}
-		}
+		                    if (numOfPagesFound == 0)
+		                        va = page;
 
+		                    numOfPagesFound++;
+		                    if (numOfPagesFound == numOfPages)
+		                    {
+		                        allocated = (void*)va;
+		                        sys_allocate_user_mem(va, size);
+		            	        cprintf("Page: %x, Index: %d, VA: %x,allocated: %y \n", page, index, va,(void *)allocated);
+		            	        //cprintf("no of pages : %m ",numOfPagesFound);
+		            	        //return allocated;
+		                        break;
+		                    }
+		                }
+		                else
+		                {
+		                    va = 0;
+		                    numOfPagesFound = 0;
+		                }
+		            }
+		        }
+		        else
+		        {
+		        	cprintf("Yalahwaaay");
+		        	//return allocated;
+		        }
+		    }
 
-	}
-	return allocated;
+		    return allocated;
 	//Use sys_isUHeapPlacementStrategyFIRSTFIT() and	sys_isUHeapPlacementStrategyBESTFIT()
 	//to check the current strategy
 
