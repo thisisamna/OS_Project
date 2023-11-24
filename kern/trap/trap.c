@@ -410,12 +410,9 @@ void fault_handler(struct Trapframe *tf)
 
 			//CHECK IF IT IS POINTING TO READ-ONLY PAGE
 			perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
-			if(perms & PERM_WRITEABLE)
+			if(perms & PERM_PRESENT)
 			{
-				//invalid = 1;
-			}
-			else
-			{
+
 				invalid = 1;
 			}
 
