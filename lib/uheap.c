@@ -64,6 +64,7 @@ void* malloc(uint32 size)
 
 		        if (sys_isUHeapPlacementStrategyFIRSTFIT() > 0)
 		        {
+		        	size=ROUNDUP(size,PAGE_SIZE);
 		            for (uint32 page = (sys_get_hard_limit() + PAGE_SIZE); page < USER_HEAP_MAX; page = (page + PAGE_SIZE))
 		            {
 		                index = (page - USER_HEAP_START) / PAGE_SIZE;
@@ -78,6 +79,13 @@ void* malloc(uint32 size)
 		                    {
 		                        allocated = (void*)va;
 		                        sys_allocate_user_mem(va, size);
+		                        index = (va - USER_HEAP_START) / PAGE_SIZE;
+		                        //MARK THE PAGES IN UHEAP
+		                        for(int i=0; i<numOfPages;++i)
+		                        {
+		                        	marked[index] = 1;
+		                        	++index;
+		                       	}
 		            	        //cprintf("Page: %x, Index: %d, VA: %x,allocated: %y \n", page, index, va,(void *)allocated);
 		            	        //cprintf("no of pages : %m ",numOfPagesFound);
 		            	        //return allocated;
