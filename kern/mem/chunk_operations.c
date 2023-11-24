@@ -133,11 +133,13 @@ void allocate_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 	int ret;
 	for(int i=0; i<numOfPages;i++)
 	{
+		//check if the page table exist if not create one
 		ptr_page_table = NULL;
 		ret = get_page_table(e->env_page_directory, virtual_address, &ptr_page_table);
 		if(ret == TABLE_NOT_EXIST)
 			ptr_page_table = create_page_table(e->env_page_directory, virtual_address);
 
+		//mark the page
 		pt_set_page_permissions(e->env_page_directory, virtual_address ,PERM_AVAILABLE, 0);
 		virtual_address+=PAGE_SIZE;
 	}

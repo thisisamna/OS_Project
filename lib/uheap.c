@@ -17,7 +17,7 @@ void InitializeUHeap()
 	}
 }
 
-int mapped[(USER_HEAP_MAX-USER_HEAP_START)/PAGE_SIZE] = {0};
+int marked[(USER_HEAP_MAX-USER_HEAP_START)/PAGE_SIZE] = {0};
 
 //==================================================================================//
 //============================ REQUIRED FUNCTIONS ==================================//
@@ -67,7 +67,7 @@ void* malloc(uint32 size)
 		            for (uint32 page = (sys_get_hard_limit() + PAGE_SIZE); page < USER_HEAP_MAX; page = (page + PAGE_SIZE))
 		            {
 		                index = (page - USER_HEAP_START) / PAGE_SIZE;
-		                if (mapped[index] == 0)
+		                if (marked[index] == 0)
 		                {
 
 		                    if (numOfPagesFound == 0)
@@ -78,7 +78,7 @@ void* malloc(uint32 size)
 		                    {
 		                        allocated = (void*)va;
 		                        sys_allocate_user_mem(va, size);
-		            	        cprintf("Page: %x, Index: %d, VA: %x,allocated: %y \n", page, index, va,(void *)allocated);
+		            	        //cprintf("Page: %x, Index: %d, VA: %x,allocated: %y \n", page, index, va,(void *)allocated);
 		            	        //cprintf("no of pages : %m ",numOfPagesFound);
 		            	        //return allocated;
 		                        break;
