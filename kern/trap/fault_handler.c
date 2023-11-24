@@ -105,6 +105,8 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 			}
 			else
 			{
+				sched_kill_env(curenv->env_id);
+
 				return;
 			}
 		}
