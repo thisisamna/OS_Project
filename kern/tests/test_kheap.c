@@ -821,7 +821,7 @@ int test_kfree_bestfirstfit()
 		}
 	}
 
-	//kfree some of the allocated spaces [10%]
+	cprintf("kfree some of the allocated spaces [10%]");
 	{
 		//kfree 1st 2 MB
 		int freeFrames = sys_calculate_free_frames() ;
@@ -854,7 +854,7 @@ int test_kfree_bestfirstfit()
 	if (correct)	eval+=10 ;
 
 	correct = 1 ;
-	//Check memory access after kfree [10%]
+	cprintf("Check memory access after kfree [10%]");
 	{
 		//2 KB
 		ptr = (char*)ptr_allocations[3];
@@ -891,7 +891,7 @@ int test_kfree_bestfirstfit()
 	if (correct)	eval+=10 ;
 
 	correct = 1 ;
-	//Allocate after kfree [15%]
+	cprintf("Allocate after kfree [15%]");
 	{
 		//Allocate in merged freed space
 		//3 MB
@@ -941,7 +941,7 @@ int test_kfree_bestfirstfit()
 	if (correct)	eval+=15 ;
 
 	correct = 1 ;
-	//kfree remaining allocated spaces [15%]
+	cprintf("kfree remaining allocated spaces [15%]");
 	{
 		//kfree 3 MB [PAGE ALLOCATOR: Should be Merged with NEXT 6 MB hole - total = 9MB]
 		freeFrames = sys_calculate_free_frames() ;
@@ -997,7 +997,7 @@ int test_kfree_bestfirstfit()
 	if (correct)	eval+=15 ;
 
 	correct = 1 ;
-	//Check memory access after kfree [15%]
+	cprintf("Check memory access after kfree [15%]");
 	{
 		//Bypass the PAGE FAULT on <MOVB immediate, reg> instruction by setting its length
 		//and continue executing the remaining code
@@ -1029,7 +1029,7 @@ int test_kfree_bestfirstfit()
 
 	correct = 1 ;
 
-	//	//kfree non-exist item [10%]
+	///kfree non-exist item [10%]
 	//	{
 	//		//kfree 2 MB
 	//		freeFrames = sys_calculate_free_frames() ;
@@ -1062,10 +1062,10 @@ int test_kfree_bestfirstfit()
 	//	}
 	//	cprintf("\b\b\b75%\n"); }
 
-	//Allocate after kfree ALL [30%]
+	cprintf("Allocate after kfree ALL [30%]\n");
 	{
 		//[DYNAMIC ALLOCATOR] Allocate in merged freed space
-		//1 KB
+		cprintf("1 KB \n");
 		freeFrames = sys_calculate_free_frames() ;
 		freeDiskFrames = pf_calculate_free_frames() ;
 		ptr_allocations[11] = kmalloc(1*kilo);
@@ -1081,7 +1081,7 @@ int test_kfree_bestfirstfit()
 		}
 
 		//[DYNAMIC ALLOCATOR] Allocate in merged freed space
-		//2 KB
+		cprintf("2 KB \n");
 		freeFrames = sys_calculate_free_frames() ;
 		freeDiskFrames = pf_calculate_free_frames() ;
 		ptr_allocations[12] = kmalloc(2*kilo);
@@ -1102,7 +1102,7 @@ int test_kfree_bestfirstfit()
 		}
 
 		//[DYNAMIC ALLOCATOR] Allocate in merged freed space
-		//1.5 KB
+		cprintf("1.5 KB \n");
 		freeFrames = sys_calculate_free_frames() ;
 		freeDiskFrames = pf_calculate_free_frames() ;
 		ptr_allocations[13] = kmalloc(3*kilo/2);
@@ -1119,7 +1119,7 @@ int test_kfree_bestfirstfit()
 		}
 
 		//[PAGE ALLOCATOR] Allocate in merged freed space
-		//30 MB
+		cprintf("30 MB \n");
 		freeFrames = sys_calculate_free_frames() ;
 		freeDiskFrames = pf_calculate_free_frames() ;
 		ptr_allocations[10] = kmalloc(30*Mega);
@@ -1134,7 +1134,7 @@ int test_kfree_bestfirstfit()
 		}
 
 
-		//30 MB
+		cprintf("30 MB \n");
 		ptr = (char*)ptr_allocations[10];
 		for (i = 0; i < lastIndices[10]; ++i)
 		{
@@ -1142,7 +1142,7 @@ int test_kfree_bestfirstfit()
 		}
 		if (sums[10] != 10*lastIndices[10])	{ correct = 0; cprintf("kfree: invalid read - data is corrupted\n"); }
 
-		//1 KB
+		cprintf("1 KB ");
 		ptr = (char*)ptr_allocations[11];
 		for (i = 0; i < lastIndices[11]; ++i)
 		{
@@ -1150,7 +1150,7 @@ int test_kfree_bestfirstfit()
 		}
 		if (sums[11] != 11*lastIndices[11])	{ correct = 0; cprintf("kfree: invalid read - data is corrupted\n"); }
 
-		//2 KB
+		cprintf("2 KB ");
 		ptr = (char*)ptr_allocations[12];
 		for (i = 0; i < lastIndices[12]; ++i)
 		{
@@ -1158,7 +1158,7 @@ int test_kfree_bestfirstfit()
 		}
 		if (sums[12] != 12*lastIndices[12])	{ correct = 0; cprintf("kfree: invalid read - data is corrupted\n"); }
 
-		//1.5 KB
+		cprintf("1.5 KB ");
 		ptr = (char*)ptr_allocations[13];
 		for (i = 0; i < lastIndices[13]; ++i)
 		{
@@ -1169,7 +1169,7 @@ int test_kfree_bestfirstfit()
 	if (correct)	eval+=30 ;
 
 	correct = 1 ;
-	//check tables	[5%]
+	cprintf("check tables	[5%]\n");
 	{
 		long long va;
 		for (va = KERNEL_HEAP_START; va < (long long)KERNEL_HEAP_MAX; va+=PTSIZE)
