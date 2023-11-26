@@ -188,9 +188,10 @@ void *alloc_block_FF(uint32 size)
     //if no blocks were found:
     struct BlockMetaData* old_sbrk=sbrk(size);
 	//returns old sbreak, add block there
-	old_sbrk->size= size;
+	old_sbrk->size= (uint32)sbrk(0)-(uint32)old_sbrk;
 	old_sbrk->is_free=1;
 	LIST_INSERT_TAIL(&block_list, old_sbrk);
+	shrink_block(old_sbrk,size);
 	return ++old_sbrk;
 
 }
