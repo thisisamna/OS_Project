@@ -11,7 +11,8 @@
 #include "memory_manager.h"
 #include <inc/queue.h>
 #include <kern/tests/utilities.h>
-
+//our includes
+#include "paging_helpers.h"
 //extern void inctst();
 
 /******************************/
@@ -120,14 +121,46 @@ void allocate_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 	/*=============================================================================*/
 	//TODO: [PROJECT'23.MS2 - #10] [2] USER HEAP - allocate_user_mem() [Kernel Side]
 	/*REMOVE THESE LINES BEFORE START CODING */
-	inctst();
-	return;
+	//inctst();
+	//return;
+
 	/*=============================================================================*/
 
 	// Write your code here, remove the panic and write your code
-	panic("allocate_user_mem() is not implemented yet...!!");
-}
+	//panic("allocate_user_mem() is not implemented yet...!!");
+	uint32 numOfPages=size/PAGE_SIZE;
+	uint32* ptr_page_table;
+	int ret;
+	for(int i=0; i<numOfPages;i++)
+	{
+		//check if the page table exist if not create one
+		ptr_page_table = NULL;
+		ret = get_page_table(e->env_page_directory, virtual_address, &ptr_page_table);
+		if(ret == TABLE_NOT_EXIST)
+			ptr_page_table = create_page_table(e->env_page_directory, virtual_address);
 
+		//mark the page
+		pt_set_page_permissions(e->env_page_directory, virtual_address ,PERM_AVAILABLE, 0);
+		virtual_address+=PAGE_SIZE;
+
+		// add page to working set
+
+		struct WorkingSetElement *newElement= env_page_ws_list_create_element(e,virtual_address);
+		LIST_INSERT_TAIL(&(e->page_WS_list), newElement);
+		if (LIST_SIZE(&(e->page_WS_list)) == e->page_WS_max_size)
+		{
+			e->page_last_WS_element = LIST_FIRST(&(e->page_WS_list));
+		}
+		else
+		{
+			e->page_last_WS_element = NULL;
+		}
+
+		//table_fault_handler(e,virtual_address);
+
+	}
+	return;
+}
 //=====================================
 // 2) FREE USER MEMORY:
 //=====================================
@@ -137,6 +170,13 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 	/*==========================================================================*/
 	//TODO: [PROJECT'23.MS2 - #12] [2] USER HEAP - free_user_mem() [Kernel Side]
 	//Unmark the given range && Free ONLY pages that are resident in the working set from the memor
+	/*REMOVE THESE LINES BEFORE START CODING */
+	//inctst();
+	//return;
+	/*==========================================================================*/
+
+	// Write your code here, remove the panic and write your code
+	//panic("free_user_mem() is not implemented yet...!!");
 	/*
 	uint32 index =((virtual_address-USER_HEAP_START)/PAGE_SIZE);
 	int count =virtual_addresses_sizes[index];
@@ -154,15 +194,6 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 	}
 }
 */
-	/*REMOVE THESE LINES BEFORE START CODING */
-
-	inctst();
-	return;
-	/*==========================================================================*/
-
-	// Write your code here, remove the panic and write your code
-	//panic("free_user_mem() is not implemented yet...!!");
-
 	//TODO: [PROJECT'23.MS2 - BONUS#2] [2] USER HEAP - free_user_mem() IN O(1): removing page from WS List instead of searching the entire list
 
 

@@ -17,6 +17,8 @@ void InitializeUHeap()
 	}
 }
 
+int marked[(USER_HEAP_MAX-USER_HEAP_START)/PAGE_SIZE] = {0};
+
 //==================================================================================//
 //============================ REQUIRED FUNCTIONS ==================================//
 //==================================================================================//
@@ -42,49 +44,75 @@ void* malloc(uint32 size)
 	//==============================================================
 	//TODO: [PROJECT'23.MS2 - #09] [2] USER HEAP - malloc() [User Side]
 	// Write your code here, remove the panic and write your code
-/*
-	struct Env* curenv = 0;//L7ad ma3raf agebha ezay
-	void * allocated;
-	if(size < DYN_ALLOC_MAX_BLOCK_SIZE)
-		return alloc_block_FF(size);
 
-	else
-	{
-		uint32* ptr_page_table = NULL;
-		int numOfPagesFound = 0;
-		int numOfPages = (ROUNDUP(size,PAGE_SIZE))/PAGE_SIZE;
-		uint32 va;
-		for(uint32 page = (curenv-> hard_limit + PAGE_SIZE); page <USER_HEAP_MAX; page = (page + PAGE_SIZE))
-		{
-			ptr_page_table = NULL;
-			if(get_frame_info(curenv->env_page_directory, page, &ptr_page_table) == 0)
-			{
-				if(numOfPagesFound==0)
-					va=page;
+	 struct Env* curenv = 0; // UNUSED BUT DO NOT DELETE!!
+		    void* allocated = NULL;
+		    int index;
 
-				numOfPagesFound++;
-				if(numOfPagesFound == numOfPages)
-				{
-					allocated = (void*) va;
-					sys_allocate_user_mem(va, size); //should i loop?
-					break;
-				}
-			}
+		    if (size == 0)
+		        return NULL;
 
-			else
-			{
-				va=0;
-				numOfPagesFound = 0;
-			}
-		}
+		    if (size <= DYN_ALLOC_MAX_BLOCK_SIZE)
+		    {
+		        return alloc_block_FF(size);
+		    }
+		    else
+		    {
+		        int numOfPagesFound = 0;
+		        int numOfPages = (ROUNDUP(size, PAGE_SIZE)) / PAGE_SIZE;
+		        uint32 va = 0;
 
+		        if (sys_isUHeapPlacementStrategyFIRSTFIT() > 0)
+		        {
+		        	size=ROUNDUP(size,PAGE_SIZE);
+		            for (uint32 page = (sys_get_hard_limit() + PAGE_SIZE); page < USER_HEAP_MAX; page = (page + PAGE_SIZE))
+		            {
+		                index = (page - USER_HEAP_START) / PAGE_SIZE;
+		                if (marked[index] == 0)
+		                {
 
-	}
-	return allocated;
+		                    if (numOfPagesFound == 0)
+		                        va = page;
+
+		                    numOfPagesFound++;
+		                    if (numOfPagesFound == numOfPages)
+		                    {
+		                        allocated = (void*)va;
+		                        sys_allocate_user_mem(va, size);
+		                        index = (va - USER_HEAP_START) / PAGE_SIZE;
+		                        //MARK THE FIRST PAGE WITH ALLOCATION SIZE
+		                        marked[index]=numOfPages;
+		                        index++;
+		                        //MARK THE FOLLIWNG PAGES IN UHEAP
+		                        for(int i=0; i<numOfPages-1;++i)
+		                        {
+		                        	marked[index] = -1;
+		                        	++index;
+		                       	}
+		            	        //cprintf("Page: %x, Index: %d, VA: %x,allocated: %y \n", page, index, va,(void *)allocated);
+		            	        //cprintf("no of pages : %m ",numOfPagesFound);
+		            	        //return allocated;
+		                        break;
+		                    }
+		                }
+		                else
+		                {
+		                    va = 0;
+		                    numOfPagesFound = 0;
+		                }
+		            }
+		        }
+		        else
+		        {
+		        	cprintf("Yalahwaaay");
+		        	//return allocated;
+		        }
+		    }
+
+		    return allocated;
 	//Use sys_isUHeapPlacementStrategyFIRSTFIT() and	sys_isUHeapPlacementStrategyBESTFIT()
 	//to check the current strategy
-*/
-	return NULL;
+
 }
 
 //=================================

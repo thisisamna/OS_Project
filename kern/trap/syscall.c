@@ -335,6 +335,11 @@ int sys_getSemaphoreValue(int32 ownerEnvID, char* semaphoreName)
 	return semaphores[semID].value ;
 }
 
+int sys_get_hard_limit()
+{
+	return curenv->hard_limit;
+
+}
 /*******************************/
 /* SHARED MEMORY SYSTEM CALLS */
 /*******************************/
@@ -474,6 +479,7 @@ void sys_bypassPageFault(uint8 instrLength)
 
 
 
+
 /**********************************/
 /* DYNAMIC ALLOCATOR SYSTEM CALLS */
 /**********************************/
@@ -483,6 +489,19 @@ void* sys_sbrk(int increment)
 	//TODO: [PROJECT'23.MS2 - #08] [2] USER HEAP - Block Allocator - sys_sbrk() [Kernel Side]
 	//MS2: COMMENT THIS LINE BEFORE START CODING====
 	return (void*)-1 ;
+//	if (increment==0){
+//				return USER_HEAP_MAX ;
+//			}
+//		void *old_heap_end = USER_HEAP_MAX;
+//		void *new_heap_end = old_heap_end + increment;
+//
+//		if (increment > 0) {
+//			USER_HEAP_MAX = new_heap_end;
+//		        return old_heap_end;
+//		}else {
+//
+//		return (void*)-1 ;}
+
 	//====================================================
 
 	/*2023*/
@@ -544,7 +563,7 @@ uint32 syscall(uint32 syscallno, uint32 a1, uint32 a2, uint32 a3, uint32 a4, uin
 		    break;
 	//=====================================================================
 	case SYS_get_hard_limit:
-		return curenv->hard_limit;
+		return (uint32)sys_get_hard_limit();
 		break;
 	case SYS_cputs:
 		sys_cputs((const char*)a1,a2,(uint8)a3);

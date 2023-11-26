@@ -781,7 +781,7 @@ void initialize_uheap_dynamic_allocator(struct Env* e, uint32 daStart, uint32 da
 	//	2) call the initialize_dynamic_allocator(..) to complete the initialization
 	//panic("not implemented yet");
 	e->start=daStart;
-	segment_break=daStart;
+	e->segment_break=daStart;
 	e->hard_limit=daLimit;
 	initialize_dynamic_allocator(daStart,0);
 }
