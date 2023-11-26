@@ -247,15 +247,12 @@ void *alloc_block_BF(uint32 size)
          struct BlockMetaData* old_sbrk=sbrk(size);
          if(old_sbrk==(void*)-1)
              return NULL;
-         else
-         {
-             //returns old sbreak, add block there
-             old_sbrk->size= ROUNDUP(size, PAGE_SIZE);
-             old_sbrk->is_free=1;
-             LIST_INSERT_AFTER(&block_list, blockInList, old_sbrk);
-             shrink_block(old_sbrk, size);
-             return ++old_sbrk;
-         }
+     	//returns old sbreak, add block there
+     	old_sbrk->size= (uint32)sbrk(0)-(uint32)old_sbrk;
+     	old_sbrk->is_free=1;
+     	LIST_INSERT_TAIL(&block_list, old_sbrk);
+     	shrink_block(old_sbrk,size);
+     	return ++old_sbrk;
 }
 //=========================================
 // [6] ALLOCATE BLOCK BY WORST FIT:
