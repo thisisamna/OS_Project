@@ -568,12 +568,8 @@ uint32 syscall(uint32 syscallno, uint32 a1, uint32 a2, uint32 a3, uint32 a4, uin
 	/*2023*/
 	//TODO: [PROJECT'23.MS1 - #4] [2] SYSTEM CALLS - Add suitable code here
 	case SYS_sbrk:
-	   if(a1 != 0 && a1<USER_LIMIT)
-	    {
 	        return (uint32)sys_sbrk(a1);
-	    }
-	    else
-	    	sched_kill_env(curenv->env_id);
+
 	    break;
 	case SYS_free_user_mem:
 		   if(a1 != 0 && a1<USER_LIMIT && a1+a2 <USER_LIMIT)
