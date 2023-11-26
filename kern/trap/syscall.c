@@ -507,6 +507,7 @@ void* sys_sbrk(int increment)
 			return (void*) -1; //Exceeded hard limit
 		}
 		curenv->segment_break+=increment;
+		allocate_user_mem(curenv, old_segment_break,increment);
 		return (void*) old_segment_break;
 
 	}
