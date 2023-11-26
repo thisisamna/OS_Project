@@ -80,10 +80,13 @@ void* malloc(uint32 size)
 		                        allocated = (void*)va;
 		                        sys_allocate_user_mem(va, size);
 		                        index = (va - USER_HEAP_START) / PAGE_SIZE;
-		                        //MARK THE PAGES IN UHEAP
-		                        for(int i=0; i<numOfPages;++i)
+		                        //MARK THE FIRST PAGE WITH ALLOCATION SIZE
+		                        marked[index]=numOfPages;
+		                        index++;
+		                        //MARK THE FOLLIWNG PAGES IN UHEAP
+		                        for(int i=0; i<numOfPages-1;++i)
 		                        {
-		                        	marked[index] = 1;
+		                        	marked[index] = -1;
 		                        	++index;
 		                       	}
 		            	        //cprintf("Page: %x, Index: %d, VA: %x,allocated: %y \n", page, index, va,(void *)allocated);

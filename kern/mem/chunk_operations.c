@@ -156,7 +156,7 @@ void allocate_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 			e->page_last_WS_element = NULL;
 		}
 		*/
-		table_fault_handler(e,virtual_address);
+		//table_fault_handler(e,virtual_address);
 
 	}
 	return;
