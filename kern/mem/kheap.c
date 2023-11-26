@@ -70,7 +70,7 @@ void* sbrk(int increment)
 	uint32 *ptr_page_table = NULL;
 	uint32 old_segment_break= segment_break;
 	uint32 va = segment_break;
-
+	uint32 numOfPages;
 
 	if(increment==0)
 	{
@@ -84,7 +84,8 @@ void* sbrk(int increment)
 		{
 			panic("Exceeded limit");
 		}
-		for(int i=0; i<increment/PAGE_SIZE;i++)
+		numOfPages=increment/PAGE_SIZE;
+		for(int i=0; i<numOfPages;i++)
 		{
 			allocate_frame(&frame);
 			map_frame(ptr_page_directory, frame,  va, PERM_PRESENT | PERM_WRITEABLE);
@@ -103,13 +104,12 @@ void* sbrk(int increment)
 		}
 		segment_break-=increment;
 		increment= ROUNDDOWN(increment, PAGE_SIZE)*-1;
-
-		for(int i=0; i<increment/PAGE_SIZE;i++)
+		numOfPages=increment/PAGE_SIZE;
+		for(int i=0; i<numOfPages;i++)
 		{
 			va -=PAGE_SIZE;
 			frame = get_frame_info(ptr_page_directory,va,&ptr_page_table);
 			unmap_frame(ptr_page_directory,va);
-			free_frame(frame);
 		}
 
 		return (void*)segment_break;;

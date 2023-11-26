@@ -488,19 +488,46 @@ void* sys_sbrk(int increment)
 {
 	//TODO: [PROJECT'23.MS2 - #08] [2] USER HEAP - Block Allocator - sys_sbrk() [Kernel Side]
 	//MS2: COMMENT THIS LINE BEFORE START CODING====
-	return (void*)-1 ;
-//	if (increment==0){
-//				return USER_HEAP_MAX ;
-//			}
-//		void *old_heap_end = USER_HEAP_MAX;
-//		void *new_heap_end = old_heap_end + increment;
-//
-//		if (increment > 0) {
-//			USER_HEAP_MAX = new_heap_end;
-//		        return old_heap_end;
-//		}else {
-//
-//		return (void*)-1 ;}
+	struct FrameInfo* frame =NULL;
+	uint32 *ptr_page_table = NULL;
+	uint32 old_segment_break= curenv->segment_break;
+	uint32 va = old_segment_break;
+
+
+	if(increment==0)
+	{
+		return (void*) old_segment_break;
+	}
+	else if(increment>0)
+	{
+		increment= ROUNDUP(increment, PAGE_SIZE);
+
+		if(va+increment>curenv->hard_limit)
+		{
+			return (void*) -1; //Exceeded hard limit
+		}
+		curenv->segment_break+=increment;
+		return (void*) old_segment_break;
+
+	}
+	else
+	{
+		if(curenv->segment_break-increment < curenv->start)// dynamic allocator region is negative size
+		{
+			return (void*) -1; //Shrinked space beyond zero
+		}
+		curenv->segment_break-=increment;
+		increment= ROUNDDOWN(increment, PAGE_SIZE)*-1;
+
+		for(int i=0; i<increment/PAGE_SIZE;i++)
+		{
+			va -=PAGE_SIZE;
+			frame = get_frame_info(curenv->env_page_directory,va,&ptr_page_table);
+			unmap_frame(curenv->env_page_directory,va);
+		}
+
+		return (void*)curenv->segment_break;;
+	}
 
 	//====================================================
 
