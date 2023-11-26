@@ -391,6 +391,7 @@ void fault_handler(struct Trapframe *tf)
 			//CHECK IF IT IS POINTING TO KERNEL
 			if(fault_va>USER_LIMIT)
 			{
+				cprintf("Kernel\n");
 				invalid = 1;
 			}
 
@@ -404,7 +405,11 @@ void fault_handler(struct Trapframe *tf)
 					//invalid = 0;
 				}
 				else
+				{
+					cprintf("Unmarked\n");
+
 					invalid = 1;
+				}
 
 			}
 
@@ -412,6 +417,7 @@ void fault_handler(struct Trapframe *tf)
 			perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
 			if(perms & PERM_PRESENT)
 			{
+				cprintf("Read only\n");
 
 				invalid = 1;
 			}
@@ -419,6 +425,8 @@ void fault_handler(struct Trapframe *tf)
 			//KILL THE PROCCESS
 			if(invalid)
 			{
+				cprintf("Killed by invalid pointer\n");
+
 				sched_kill_env(faulted_env->env_id);
 			}
 

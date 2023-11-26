@@ -67,7 +67,6 @@ void* malloc(uint32 size)
 		                index = (page - USER_HEAP_START) / PAGE_SIZE;
 		                if (marked[index] == 0)
 		                {
-
 		                    if (numOfPagesFound == 0)
 		                        va = page;
 
