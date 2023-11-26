@@ -502,7 +502,7 @@ void* sys_sbrk(int increment)
 	{
 		increment= ROUNDUP(increment, PAGE_SIZE);
 
-		if(va+increment>curenv->hard_limit)
+		if((va+increment) > (curenv->hard_limit))
 		{
 			return (void*) -1; //Exceeded hard limit
 		}
@@ -512,7 +512,7 @@ void* sys_sbrk(int increment)
 	}
 	else
 	{
-		if(curenv->segment_break-increment < curenv->start)// dynamic allocator region is negative size
+		if((va-increment < curenv->start))// dynamic allocator region is negative size
 		{
 			return (void*) -1; //Shrinked space beyond zero
 		}
@@ -523,7 +523,8 @@ void* sys_sbrk(int increment)
 		{
 			va -=PAGE_SIZE;
 			frame = get_frame_info(curenv->env_page_directory,va,&ptr_page_table);
-			unmap_frame(curenv->env_page_directory,va);
+			if(frame!=0)
+				unmap_frame(curenv->env_page_directory,va);
 		}
 
 		return (void*)curenv->segment_break;;
