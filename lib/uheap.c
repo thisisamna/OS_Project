@@ -52,7 +52,7 @@ void* malloc(uint32 size)
 		    if (size == 0)
 		        return NULL;
 
-		    if (size < DYN_ALLOC_MAX_BLOCK_SIZE)
+		    if (size <= DYN_ALLOC_MAX_BLOCK_SIZE)
 		    {
 		        return alloc_block_FF(size);
 		    }
