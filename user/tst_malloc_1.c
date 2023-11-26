@@ -20,17 +20,22 @@ void _main(void)
 	 * (e.g. DURING THE DYNAMIC CREATION OF WS ELEMENT in FH).
 	 *********************************************************/
 
-	//cprintf("1\n");
+	cprintf("1\n");
 	//Initial test to ensure it works on "PLACEMENT" not "REPLACEMENT"
+#if USE_KHEAP
 	{
 		if (LIST_SIZE(&(myEnv->page_WS_list)) >= myEnv->page_WS_max_size)
 			panic("Please increase the WS size");
 	}
+#else
+	panic("make sure to enable the kernel heap: USE_KHEAP=1");
+#endif
+
 	//	/*Dummy malloc to enforce the UHEAP initializations*/
 	//	malloc(0);
 	/*=================================================*/
 
-	//cprintf("2\n");
+	cprintf("2\n");
 
 	uint32 pagealloc_start = USER_HEAP_START + DYN_ALLOC_MAX_SIZE + PAGE_SIZE; //UHS + 32MB + 4KB
 
@@ -53,7 +58,7 @@ void _main(void)
 	int expectedNumOfFrames, actualNumOfFrames;
 	void* ptr_allocations[20] = {0};
 	{
-		//cprintf("3\n");
+		cprintf("3\n");
 
 		//2 MB
 		{
@@ -79,7 +84,7 @@ void _main(void)
 			found = sys_check_WS_list(expectedVAs, 2, 0, 2);
 			if (found != 1) panic("malloc: page is not added to WS");
 		}
-		//cprintf("4\n");
+		cprintf("4\n");
 
 		//2 MB
 		{
@@ -103,11 +108,10 @@ void _main(void)
 			found = sys_check_WS_list(expectedVAs, 2, 0, 2);
 			if (found != 1) panic("malloc: page is not added to WS");
 		}
-		//cprintf("5\n");
+		cprintf("5\n");
 
 		//3 KB
 		{
-			freeFrames = sys_calculate_free_frames() ;
 			usedDiskPages = sys_pf_calculate_allocated_pages() ;
 			ptr_allocations[2] = malloc(3*kilo);
 			if ((uint32) ptr_allocations[2] != (pagealloc_start + 4*Mega)) panic("Wrong start address for the allocated space... ");
@@ -129,7 +133,6 @@ void _main(void)
 
 		//3 KB
 		{
-			freeFrames = sys_calculate_free_frames() ;
 			usedDiskPages = sys_pf_calculate_allocated_pages() ;
 			ptr_allocations[3] = malloc(3*kilo);
 			if ((uint32) ptr_allocations[3] != (pagealloc_start + 4*Mega + 4*kilo)) panic("Wrong start address for the allocated space... ");
@@ -171,6 +174,7 @@ void _main(void)
 
 		//6 MB
 		{
+			freeFrames = sys_calculate_free_frames() ;
 			usedDiskPages = sys_pf_calculate_allocated_pages() ;
 			ptr_allocations[6] = malloc(6*Mega-kilo);
 			if ((uint32) ptr_allocations[6] != (pagealloc_start + 7*Mega + 16*kilo)) panic("Wrong start address for the allocated space... ");
@@ -194,6 +198,7 @@ void _main(void)
 
 		//14 KB
 		{
+			freeFrames = sys_calculate_free_frames() ;
 			usedDiskPages = sys_pf_calculate_allocated_pages() ;
 			ptr_allocations[7] = malloc(14*kilo);
 			if ((uint32) ptr_allocations[7] != (pagealloc_start + 13*Mega + 16*kilo)) panic("Wrong start address for the allocated space... ");

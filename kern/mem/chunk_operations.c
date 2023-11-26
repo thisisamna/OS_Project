@@ -144,7 +144,7 @@ void allocate_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 		virtual_address+=PAGE_SIZE;
 
 		// add page to working set
-		/*
+
 		struct WorkingSetElement *newElement= env_page_ws_list_create_element(e,virtual_address);
 		LIST_INSERT_TAIL(&(e->page_WS_list), newElement);
 		if (LIST_SIZE(&(e->page_WS_list)) == e->page_WS_max_size)
@@ -155,7 +155,7 @@ void allocate_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 		{
 			e->page_last_WS_element = NULL;
 		}
-		*/
+
 		//table_fault_handler(e,virtual_address);
 
 	}
