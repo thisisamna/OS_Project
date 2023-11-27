@@ -144,6 +144,7 @@ void allocate_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 		virtual_address+=PAGE_SIZE;
 
 	}
+	e->full_size-=PAGE_SIZE*numOfPages;
 	return;
 }
 //=====================================
@@ -190,6 +191,8 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 		}
 		va += PAGE_SIZE;
 	}
+		e->full_size+=PAGE_SIZE*count;
+
 		return;
 		/*==========================================================================*/
 		//panic("free_user_mem() is not implemented yet...!!");
