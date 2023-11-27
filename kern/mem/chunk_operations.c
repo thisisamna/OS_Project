@@ -164,12 +164,17 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 		for(int i =0 ;i<count;i++){
 			va += PAGE_SIZE*i;
 
-		int perms = pt_get_page_permissions(e->env_page_directory,va); //get all permission of page entry
-		if(perms & PERM_AVAILABLE){ //get permission_AVAILABLE = 1 of page entry by &
+		int ret = get_page_table(e->env_page_directory, va, &ptr_page_table);
+		if(ret == TABLE_NOT_EXIST)
+			return;
+
+		int perms = pt_get_page_permissions(e->env_page_directory,va);
+		if(perms & PERM_AVAILABLE)
+		{
+			//unmark it
 			pt_set_page_permissions(e->env_page_directory,va,0,PERM_AVAILABLE);
-			if(get_frame_info(ptr_page_directory,va, &ptr_page_table)!=0){  //check if mapped
-				unmap_frame(ptr_page_directory,va);
-			}
+			//unmap it
+
 			//if page is in page file
 			int ret = pf_read_env_page(e, (void*)va);
 			if (ret != E_PAGE_NOT_EXIST_IN_PF)
@@ -186,8 +191,7 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 		//panic("free_user_mem() is not implemented yet...!!");
 
 		//TODO: [PROJECT'23.MS2 - BONUS#2] [2] USER HEAP - free_user_mem() IN O(1): removing page from WS List instead of searching the entire list
-	}
-
+}
 
 
 

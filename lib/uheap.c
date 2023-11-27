@@ -121,12 +121,12 @@ void free(void* virtual_address)
 
 	//If virtual address inside the [BLOCK ALLOCATOR] range
 	uint32 va = (uint32) virtual_address;
-	if(va >= KERNEL_HEAP_START && va< sys_get_hard_limit())
+	if(va >= USER_HEAP_START && va< sys_get_hard_limit())
 	{
 		free_block(virtual_address);
 	}
 	//If virtual address inside the [PAGE ALLOCATOR] range
-	else if(va >=(sys_get_hard_limit() + PAGE_SIZE) && va<=KERNEL_HEAP_MAX)
+	else if(va >=(sys_get_hard_limit() + PAGE_SIZE) && va<=USER_HEAP_MAX)
 	{
 			va=ROUNDDOWN(va,PAGE_SIZE);
 		uint32 index =((va-USER_HEAP_START)/PAGE_SIZE);
