@@ -327,69 +327,8 @@ void *krealloc(void *virtual_address, uint32 new_size)
 	//TODO: [PROJECT'23.MS2 - BONUS#1] [1] KERNEL HEAP - krealloc()
 	// Write your code here, remove the panic and write your code
 	uint32 VA =(uint32)virtual_address;
-	if (VA <=  KERNEL_HEAP_MAX && VA>=hard_limit+PAGE_SIZE ){
-		int index = ((VA-KERNEL_HEAP_START)/PAGE_SIZE);
-		uint32 numofpagesofVS=(uint32)virtual_addresses_sizes[index];
-		uint32 cureent_size=(numofpagesofVS * PAGE_SIZE);
-
-		if(new_size==cureent_size){
-			return virtual_address;
-		}
-
-		if(new_size<cureent_size){
-			uint32 lenthfree=cureent_size-new_size;
-			//uint32 NUM_Pagesfree=lenthfree/PAGE_SIZE;
-				kfree(virtual_address);
-				return kmalloc(new_size);
-				}
-
-		if(new_size>cureent_size){
-
-			uint32 *ptr_page_table =NULL;
-			uint32 numOfPagesFound =0;
-
-			uint32 lenthalloac=new_size-cureent_size;
-			uint32 NUM_Pagesalloc=lenthalloac/PAGE_SIZE;
-
-			for(uint32 page = VA + cureent_size; page <KERNEL_HEAP_MAX; page = (page + PAGE_SIZE))
-			{
-				ptr_page_table = NULL;
-				//if the page is not mapped
-				if(get_frame_info(ptr_page_directory, page, &ptr_page_table) == 0)
-				{
-					numOfPagesFound++;
-					if(numOfPagesFound == NUM_Pagesalloc)
-						{
-						//allocate and map
-						return (void*)VA;
-						}
-				}
-
-				else //no space in front of me
-				{
-					break;
-				}
-				//if there is space behind me, i need to chekc this before i free and kmalloc there
-				//there is no space around me, i need to kmalloc somewehere else and if it works ill free
-			}
-
-			/*
-			if(free_frame_list.size>=NUM_Pagesalloc){
-			for(int i=0; i<NUM_Pagesalloc;i++)
-					{
-				frame = NULL;
-				allocate_frame(&frame);
-				map_frame(ptr_page_directory, frame,  VA, PERM_PRESENT | PERM_WRITEABLE);
-				VA +=PAGE_SIZE;
-					}
-		}
-			return (void*)VA;
-			return	kmalloc(lenthalloac);
-		       }
-			*/
-		  }
-
-
+	struct FrameInfo *frame =NULL;
+     bool check = 0;
 	//(1)handling the special cases
     if (virtual_address == NULL)
     {
@@ -401,13 +340,147 @@ void *krealloc(void *virtual_address, uint32 new_size)
         return NULL;
     }
 
+	//1: If virtual address inside the [page ALLOCATOR] range
+	if (VA <=  KERNEL_HEAP_MAX && VA>=hard_limit+PAGE_SIZE )
+	{
+		//a: if the size belongs in dynamic allocator
+		if(new_size<=DYN_ALLOC_MAX_BLOCK_SIZE)
+		{
+			int address =kmalloc(new_size);
+			if(address != NULL)
+			{
+				kfree(virtual_address);
+				return address;
+			}
+			else
+			{
+			return NULL;
+			}
+
+		}
+
+		//b: if the size should remain in page allocator
+		else
+		{
+			int index = ((VA-KERNEL_HEAP_START)/PAGE_SIZE);
+			uint32 numofpagesofVS=(uint32)virtual_addresses_sizes[index];
+			uint32 cureent_size=(numofpagesofVS * PAGE_SIZE);
+
+			if(new_size==cureent_size)
+			{
+				return virtual_address;
+			}
+
+			if(new_size<cureent_size)
+			{
+				//uint32 lenthfree=cureent_size-new_size;
+				//uint32 NUM_Pagesfree=lenthfree/PAGE_SIZE;
+				uint32 new_va1= (uint32)virtual_address+new_size;
+				kfree(virtual_address);
+				return kmalloc(new_size);
+			}
+
+			if(new_size>cureent_size)
+			{
+				uint32 *ptr_page_table = NULL;
+				uint32 lenthalloac=new_size-cureent_size;
+				uint32 NUM_Pagesalloc=lenthalloac/PAGE_SIZE;
+				uint32 new_va2 =(uint32)virtual_address+cureent_size;
+				uint32 vir_address =(uint32)virtual_address;
+				uint32 numOfPagesFound =0;
+				uint32 sumpagesfound =0;
+				for(int i=0 ; i<NUM_Pagesalloc;i++) //a
+								{
+									//if the page is not mapped
+									if(get_frame_info(ptr_page_directory, vir_address, &ptr_page_table) == 0)
+									{
+										//if(numOfPagesFound==0)
+											//va=page;
+										numOfPagesFound++;
+										if(numOfPagesFound == NUM_Pagesalloc)
+										{
+											check = 1;
+											//va = (page - ((numOfPages)*PAGE_SIZE) + PAGE_SIZE);
+											//allocated = (void*) va;
+											break;
+										}
+									}
+									else
+									{
+										sumpagesfound += numOfPagesFound;
+										numOfPagesFound=0;
+										break;
+									}
+									vir_address-=PAGE_SIZE;
+
+								}
+				for(int i=0 ; i<NUM_Pagesalloc;i++) //a
+				{
+					if(check)
+						break;
+
+					//if the page is not mapped
+					if(get_frame_info(ptr_page_directory, new_va2, &ptr_page_table) == 0)
+					{
+						//if(numOfPagesFound==0)
+							//va=page;
+						numOfPagesFound++;
+						if(numOfPagesFound == NUM_Pagesalloc)
+						{
+							check=1;
+							//va = (page - ((numOfPages)*PAGE_SIZE) + PAGE_SIZE);
+							//allocated = (void*) va;
+							break;
+						}
+					}
+					else
+					{
+						sumpagesfound += numOfPagesFound;
+						numOfPagesFound=0;
+						break;
+					}
+
+					new_va2+=PAGE_SIZE;
+
+				}
+				if(check || sumpagesfound==NUM_Pagesalloc){
+					kfree(virtual_address);
+					kmalloc(new_size);
+				}
+
+				//return kmalloc(lenthalloac);
+			}
+		}
 	}
-	//If virtual address inside the [BLOCK ALLOCATOR] range
+
+
+	//2: If virtual address inside the [BLOCK ALLOCATOR] range
 	       //Use dynamic allocator to realloc new size
 	if(VA >=KERNEL_HEAP_START &&  VA<= hard_limit )
-	     {
-		realloc_block_FF(virtual_address,  new_size);
-	     }
-	return NULL;
+	{
+		//a: if it will remain in block allocator
+		if(new_size<=DYN_ALLOC_MAX_BLOCK_SIZE)
+		{
+
+			realloc_block_FF(virtual_address,  new_size);
+	    }
+		//b: if it belong to page allocator
+		else
+		{
+			void* address= kmalloc(new_size);
+			if( address != NULL)
+			{
+			 kfree(virtual_address);
+			 return address;
+			}
+				else {
+				return NULL;
+				}
+		}
+	}
+	//return NULL;
 	//panic("krealloc() is not implemented yet...!!");
+
+	return NULL;
+
 }

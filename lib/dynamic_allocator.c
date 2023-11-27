@@ -310,7 +310,6 @@ void free_block(void *va)
 			}
 			if (blockBefore!=NULL && blockBefore->is_free)   // if prev block is free
 			{
-				cprintf("IM here \n");
 				blockBefore->size += blockToFree->size;
 				blockToFree->size=0;
 				blockToFree->is_free=0;
