@@ -89,7 +89,7 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 		//TODO: [PROJECT'23.MS2 - #15] [3] PAGE FAULT HANDLER - Placement
 		// Write your code here, remove the panic and write your code
 		//panic("page_fault_handler().PLACEMENT is not implemented yet...!!");
-		cprintf("Fault address: %x \n", fault_va);
+		//cprintf("Fault address: %x \n", fault_va);
 		void* va= (void*)fault_va;
 		struct FrameInfo *ptr_frame_info=NULL;
 		allocate_frame(&ptr_frame_info);
@@ -99,7 +99,7 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 
 		if (ret == E_PAGE_NOT_EXIST_IN_PF)
 		{
-			cprintf("Not in page file\n");
+			//cprintf("Not in page file\n");
 
 			if ((fault_va >= USER_HEAP_START && fault_va < USER_HEAP_MAX) || (fault_va >= USTACKBOTTOM && fault_va < USTACKTOP))
 			{
