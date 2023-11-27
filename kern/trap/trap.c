@@ -399,11 +399,7 @@ void fault_handler(struct Trapframe *tf)
 				perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
 
 				//if it is marked
-				if(perms & PERM_AVAILABLE)
-				{
-					//invalid = 0;
-				}
-				else
+				if(!(perms & PERM_AVAILABLE))
 				{
 					invalid = 1;
 				}
