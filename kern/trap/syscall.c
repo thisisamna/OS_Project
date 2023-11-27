@@ -512,6 +512,7 @@ void* sys_sbrk(int increment)
 		{
 			return (void*) -1; //Exceeded hard limit
 		}
+		curenv->full_size+=increment;
 		curenv->segment_break+=increment;
 		allocate_user_mem(curenv, old_segment_break,increment);
 		return (void*) old_segment_break;
@@ -524,6 +525,7 @@ void* sys_sbrk(int increment)
 			return (void*) -1; //Shrinked space beyond zero
 		}
 		curenv->segment_break-=increment;
+		curenv->full_size-=increment;
 		increment= ROUNDDOWN(increment, PAGE_SIZE)*-1;
 
 		for(int i=0; i<increment/PAGE_SIZE;i++)
