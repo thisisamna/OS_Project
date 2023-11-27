@@ -126,15 +126,15 @@ void free(void* virtual_address)
 		free_block(virtual_address);
 	}
 	//If virtual address inside the [PAGE ALLOCATOR] range
-	else if(va >=(sys_get_hard_limit() + PAGE_SIZE) && va<=USER_HEAP_MAX)
+	else if(va >=(sys_get_hard_limit() + PAGE_SIZE) && va<USER_HEAP_MAX)
 	{
 			va=ROUNDDOWN(va,PAGE_SIZE);
-		uint32 index =((va-USER_HEAP_START)/PAGE_SIZE);
+			uint32 index =((va-USER_HEAP_START)/PAGE_SIZE);
 				int count = marked[index];
 				uint32 sizeallocated= (uint32)count*PAGE_SIZE;
 				for(int i=0;i<count;i++){
 						marked[index]=0;
-						 ++index ;
+						 ++index;
 				   }
 				sys_free_user_mem(va,sizeallocated);
     }
