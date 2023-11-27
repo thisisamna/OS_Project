@@ -106,8 +106,6 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 			}
 			else
 			{
-				cprintf("Not stack or heap\n");
-				cprintf("Killing from placement\n");
 
 				sched_kill_env(curenv->env_id);
 				return;
