@@ -189,7 +189,7 @@ void *alloc_block_FF(uint32 size)
     struct BlockMetaData* old_sbrk=sbrk(size);
 	//returns old sbreak, add block there
 	old_sbrk->size= size;
-	old_sbrk->is_free=1;
+	old_sbrk->is_free=0;
 	LIST_INSERT_TAIL(&block_list, old_sbrk);
 	return ++old_sbrk;
 

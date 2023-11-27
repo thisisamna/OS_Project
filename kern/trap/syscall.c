@@ -526,9 +526,10 @@ void* sys_sbrk(int increment)
 			frame = get_frame_info(curenv->env_page_directory,va,&ptr_page_table);
 			if(frame!=0)
 				unmap_frame(curenv->env_page_directory,va);
+
 		}
 
-		return (void*)curenv->segment_break;;
+		return (void*)curenv->segment_break;
 	}
 
 	//====================================================

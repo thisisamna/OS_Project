@@ -20,10 +20,12 @@ inline struct WorkingSetElement* env_page_ws_list_create_element(struct Env* e, 
 	//panic("env_page_ws_list_create_element() is not implemented yet...!!");
 
 		struct WorkingSetElement* newElement = kmalloc(sizeof(struct WorkingSetElement));
+		//cprintf("new element : %x , va : %x \n",newElement,virtual_address);
 		if(newElement==NULL)
 			panic("Cant create environment\n");
 	    //struct WorkingSetElement* newElement = (struct WorkingSetElement*) virtual_address;
 	    newElement->virtual_address = virtual_address;
+	    newElement->empty=0;
 	    return newElement;
 
 
