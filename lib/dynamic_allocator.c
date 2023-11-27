@@ -170,6 +170,8 @@ void *alloc_block_FF(uint32 size)
             }
             else if(size < blockInList->size)
             {
+            	blockInList->is_free=0;
+
             	shrink_block(blockInList, size);
 
                 return ++blockInList;
@@ -299,6 +301,7 @@ void free_block(void *va)
 			}
 			if (blockBefore!=NULL && blockBefore->is_free)   // if prev block is free
 			{
+				cprintf("IM here \n");
 				blockBefore->size += blockToFree->size;
 				blockToFree->size=0;
 				blockToFree->is_free=0;
