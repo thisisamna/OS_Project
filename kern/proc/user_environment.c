@@ -783,6 +783,7 @@ void initialize_uheap_dynamic_allocator(struct Env* e, uint32 daStart, uint32 da
 	e->start=daStart;
 	e->segment_break=daStart;
 	e->hard_limit=daLimit;
+	e->full_size= daLimit - daStart;
 	initialize_dynamic_allocator(daStart,0);
 }
 
