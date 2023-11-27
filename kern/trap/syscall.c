@@ -340,6 +340,12 @@ int sys_get_hard_limit()
 	return curenv->hard_limit;
 
 }
+
+int sys_get_full_size()
+{
+	return curenv->full_size;
+
+}
 /*******************************/
 /* SHARED MEMORY SYSTEM CALLS */
 /*******************************/

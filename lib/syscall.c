@@ -364,3 +364,11 @@ uint32 sys_get_hard_limit(void)
 	return (uint32) syscall(SYS_get_hard_limit, 0, 0, 0, 0, 0);
 
 }
+
+int sys_get_full_size()
+{
+	//Comment the following line before start coding...
+	//panic("not implemented yet");
+	return (int) syscall(SYS_get_full_size, 0, 0, 0, 0, 0);
+
+}

@@ -114,6 +114,8 @@ struct Env {
 	uint32 start;
 	uint32 segment_break;
 	uint32 hard_limit;
+	uint32 full_size;
+
 	//================
 	/*WORKING SET*/
 	//================

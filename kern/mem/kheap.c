@@ -6,7 +6,6 @@
 
 
 int virtual_addresses_sizes[((KERNEL_HEAP_MAX-KERNEL_HEAP_START)/PAGE_SIZE)] = {0};
-
 int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate, uint32 daLimit)
 {
 	//TODO: [PROJECT'23.MS2 - #01] [1] KERNEL HEAP - initialize_kheap_dynamic_allocator()
@@ -22,7 +21,7 @@ int initialize_kheap_dynamic_allocator(uint32 daStart, uint32 initSizeToAllocate
 	start = daStart;
 	segment_break = daStart +initSizeToAllocate;
 	hard_limit = daLimit;
-
+	full_size = hard_limit - segment_break;
 
 	//handle: "if no memory found" ???
 	if(initSizeToAllocate > daLimit - daStart )

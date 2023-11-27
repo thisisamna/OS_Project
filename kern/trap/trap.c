@@ -383,46 +383,30 @@ void fault_handler(struct Trapframe *tf)
 			//if(Page->sweeps_counter==0)
 			//	return;
 
-			uint32 index=(fault_va-USER_HEAP_START)/PAGE_SIZE;
-			//uint32 array[100];
-			int invalid = 0;
-			int perms;
+			int perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
 
-			//CHECK IF IT IS POINTING TO KERNEL
-			if(fault_va>USER_LIMIT)
-			{
-				invalid = 1;
-			}
+						//CHECK IF IT IS POINTING TO KERNEL
+						if(fault_va>USER_LIMIT)
+						{
+							sched_kill_env(faulted_env->env_id);
+						}
 
-			//CHECK IF IT IS POINTING TO UNMARKED PAGE
-			if(fault_va>=USER_HEAP_START&&fault_va<USER_HEAP_MAX){
-				perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
+						//CHECK IF IT IS POINTING TO UNMARKED PAGE
+						if(fault_va>=USER_HEAP_START&&fault_va<USER_HEAP_MAX)
+						{
+							//if it is marked
+							if(!(perms & PERM_AVAILABLE))
+								sched_kill_env(faulted_env->env_id);
+						}
 
-				//if it is marked
-				if(perms & PERM_AVAILABLE)
-				{
-					//invalid = 0;
-				}
-				else
-				{
-					invalid = 1;
-				}
 
-			}
+						//CHECK IF IT IS POINTING TO READ-ONLY PAGE
+						if(perms & PERM_PRESENT)
+						{
+							cprintf("Read only\n");
+							sched_kill_env(faulted_env->env_id);
+						}
 
-			//CHECK IF IT IS POINTING TO READ-ONLY PAGE
-			perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
-			if(perms & PERM_PRESENT)
-			{
-
-				invalid = 1;
-			}
-
-			//KILL THE PROCCESS
-			if(invalid)
-			{
-				sched_kill_env(faulted_env->env_id);
-			}
 
 			/*============================================================================================*/
 		}
