@@ -170,6 +170,8 @@ void *alloc_block_FF(uint32 size)
             }
             else if(size < blockInList->size)
             {
+            	blockInList->is_free=0;
+
             	shrink_block(blockInList, size);
 
                 return ++blockInList;
@@ -186,12 +188,18 @@ void *alloc_block_FF(uint32 size)
 
     }
     //if no blocks were found:
-    struct BlockMetaData* old_sbrk=sbrk(size);
-	//returns old sbreak, add block there
-	old_sbrk->size= size;
-	old_sbrk->is_free=0;
-	LIST_INSERT_TAIL(&block_list, old_sbrk);
-	return ++old_sbrk;
+        struct BlockMetaData* old_sbrk=sbrk(size);
+        if(old_sbrk==(void*)-1)
+            return NULL;
+        else
+        {
+            //returns old sbreak, add block there
+            old_sbrk->size= ROUNDUP(size, PAGE_SIZE);
+            old_sbrk->is_free=0;
+            LIST_INSERT_TAIL(&block_list, old_sbrk);
+            shrink_block(old_sbrk, size);
+            return ++old_sbrk;
+        }
 
 }
 //=========================================
@@ -302,6 +310,7 @@ void free_block(void *va)
 			}
 			if (blockBefore!=NULL && blockBefore->is_free)   // if prev block is free
 			{
+				cprintf("IM here \n");
 				blockBefore->size += blockToFree->size;
 				blockToFree->size=0;
 				blockToFree->is_free=0;
