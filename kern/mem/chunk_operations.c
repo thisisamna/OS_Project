@@ -168,11 +168,15 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 		if(ret == TABLE_NOT_EXIST)
 			create_page_table(e->env_page_directory, va);
 
-		int perms = pt_get_page_permissions(e->env_page_directory,va); //get all permission of page entry
-		if(perms & PERM_AVAILABLE){ //get permission_AVAILABLE = 1 of page entry by &
+		int perms = pt_get_page_permissions(e->env_page_directory,va);
+		if(perms & PERM_AVAILABLE)
+		{
+			//unmark it
 			pt_set_page_permissions(e->env_page_directory,va,0,PERM_AVAILABLE);
-			if(get_frame_info(ptr_page_directory,va, &ptr_page_table)!=0){  //check if mapped
-				unmap_frame(ptr_page_directory,va);
+			//unmap it
+			if(get_frame_info(ptr_page_directory,va, &ptr_page_table)!=0)
+			{
+				unmap_frame(ptr_page_directory,va);/*Question*/ //passing ptr_page_directory?
 			}
 			//if page is in page file
 			int ret = pf_read_env_page(e, (void*)va);
