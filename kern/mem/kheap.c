@@ -241,15 +241,23 @@ unsigned int kheap_virtual_address(unsigned int physical_address)
 //	physical_address-=offset;
 //	physical_address=physical_address << PGSHIFT;
 	//change this "return" according to your answer
-
+	uint32 hello = 0;
 	unsigned int offset = PGOFF(physical_address);
 	struct FrameInfo* frame = to_frame_info(physical_address);
 	if(frame == NULL)
+	{
+		hello++;
 		return 0;
-	if(frame->references == 0)
-		return 0;
+	}
+
+				if(frame->references == 0)
+				{
+				hello+=3;
+				return 0;
+				}
 	else
 	{
+		hello--;
 		return frame->va + offset;
 	}
 
@@ -279,14 +287,16 @@ unsigned int kheap_physical_address(unsigned int virtual_address)
 	struct FrameInfo* frame = NULL;
 	uint32 *ptr_page_table = NULL;
 	unsigned int offset = PGOFF(virtual_address);
+	uint32 byebye=-1;
 	virtual_address =ROUNDDOWN(virtual_address, PAGE_SIZE);
 	frame = get_frame_info(ptr_page_directory,virtual_address,&ptr_page_table);
 
 	if(frame!=(void*)0)
 	{
-		return (unsigned int)to_physical_address(frame)+offset;
+return (unsigned int)to_physical_address(frame)+offset;
 	}
-	return 0;
+
+				return 0;
 }
 
 
@@ -346,7 +356,7 @@ void *krealloc(void *virtual_address, uint32 new_size)
 		//a: if the size belongs in dynamic allocator
 		if(new_size<=DYN_ALLOC_MAX_BLOCK_SIZE)
 		{
-			int address =kmalloc(new_size);
+			void* address =kmalloc(new_size);
 			if(address != NULL)
 			{
 				kfree(virtual_address);
