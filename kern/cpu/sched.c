@@ -206,7 +206,11 @@ void clock_interrupt_handler()
 {
 	//TODO: [PROJECT'23.MS3 - #5] [2] BSD SCHEDULER - Your code is here
 	{
-
+		curenv->recent_cpu++;
+		if(((*quantums)*ticks)%1000==0)
+		{
+			cprintf("HI");
+		}
 
 
 	}

@@ -34,6 +34,7 @@ struct Env_Queue env_exit_queue;	// queue of all exited envs
 	uint8 quantums[1] ;					// Quantum in ms for RR
 #endif
 uint8 num_of_ready_queues ;			// Number of ready queue(s)
+uint32 num_of_ready_processes; //bid3a
 //===============
 
 //2015
@@ -56,8 +57,7 @@ int64 timer_ticks() ;
 struct Env* fos_scheduler_BSD();
 void sched_init_BSD(uint8 numOfLevels, uint8 quantum);
 uint32 isSchedMethodBSD();
-/*BSD Addition*/
-fixed_point_t load_avg;
+fixed_point_t load_avg; //bid3a
 
 /********* for BSD Priority Scheduler *************/
 
