@@ -89,8 +89,8 @@ struct Env {
 	int priority;					// Current priority
 	char prog_name[PROGNAMELEN];	// Program name (to print it via USER.cprintf in multitasking)
 	/*BSD Additions*/
-	int nice;						//nice value
-	int recent_cpu;			//recent cpu usage
+	int32 nice;						//nice value
+	fixed_point_t recent_cpu;			//recent cpu usage
 	//================
 	/*ADDRESS SPACE*/
 	//================
