@@ -210,7 +210,9 @@ void clock_interrupt_handler()
 		curenv->recent_cpu++;
 		if((ticks*quantums[0])%1000==0)//second has passed
 		{
-			//load_avg=fix_add(fix_scale(load_avg, 59/60)+(1/60)*num_of_ready_processes;
+			fixed_point_t temp;
+			temp=(fix_int(load_avg)/60)*59+fix_int(num_of_ready_processes)/60;
+			load_avg=fix_round(temp);
 			//calculate receent cpu for every process
 
 		}
