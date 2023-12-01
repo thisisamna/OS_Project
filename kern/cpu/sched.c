@@ -1,7 +1,6 @@
 #include "sched.h"
 
 #include <inc/assert.h>
-
 #include <kern/proc/user_environment.h>
 #include <kern/trap/trap.h>
 #include <kern/mem/kheap.h>
@@ -58,10 +57,12 @@ fos_scheduler(void)
 		if (curenv != NULL)
 		{
 			enqueue(&(env_ready_queues[0]), curenv);
+			num_of_ready_processes++;
 		}
 
 		//Pick the next environment from the ready queue
 		next_env = dequeue(&(env_ready_queues[0]));
+		num_of_ready_processes--;
 
 		//Reset the quantum
 		//2017: Reset the value of CNT0 for the next clock interval
@@ -207,9 +208,16 @@ void clock_interrupt_handler()
 	//TODO: [PROJECT'23.MS3 - #5] [2] BSD SCHEDULER - Your code is here
 	{
 		curenv->recent_cpu++;
-		if(((*quantums)*ticks)%1000==0)
+		if((ticks*quantums[0])%1000==0)//second has passed
 		{
-			cprintf("HI");
+			//load_avg=fix_add(fix_scale(load_avg, 59/60)+(1/60)*num_of_ready_processes;
+			//calculate receent cpu for every process
+
+		}
+		if(  ticks%4==0)
+		{
+			//recalculate priority and reorder queues
+			//loop on all envs
 		}
 
 

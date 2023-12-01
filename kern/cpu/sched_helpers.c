@@ -126,6 +126,8 @@ void sched_insert_ready0(struct Env* env)
 	{
 		env->env_status = ENV_READY ;
 		enqueue(&(env_ready_queues[0]), env);
+		num_of_ready_processes++;
+
 	}
 }
 
@@ -143,6 +145,7 @@ void sched_remove_ready(struct Env* env)
 			{
 				LIST_REMOVE(&(env_ready_queues[i]), env);
 				env->env_status = ENV_UNKNOWN;
+				num_of_ready_processes--;
 				return;
 			}
 		}
