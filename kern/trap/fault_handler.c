@@ -181,22 +181,33 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 				 }
 
 			   }
-			   else
-			   {
-			      //TODO: [PROJECT'23.MS3 - #1] [1] PAGE FAULT HANDLER - LRU Replacement
-				   struct WorkingSetElement *victim_Remove = LIST_LAST(&(curenv->SecondList));
-				   //check if modifird => write it to disk
-				   uint32 page_permissions = pt_get_page_permissions(victim_Remove, victim_Remove->virtual_address);
-				   if(page_permissions & PERM_MODIFIED){
-					   //write it to disk
-				   LIST_REMOVE(&(curenv->SecondList),victim_Remove);
-				   }
-				   else {
-					   LIST_REMOVE(&(curenv->SecondList),victim_Remove);
-				   }
-				   struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
-				   LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
+			 else
+			 {
+				 //TODO: [PROJECT'23.MS3 - #1] [1] PAGE FAULT HANDLER - LRU Replacement
+				struct WorkingSetElement *elem_set= env_page_ws_list_create_element(curenv, fault_va);
 
+			   if(){
+					  //case
+				   }
+			    else {
+		            struct WorkingSetElement *victim_Remove = LIST_LAST(&(curenv->SecondList));
+				   //check if modifird => write it to disk
+			       uint32 page_permissions = pt_get_page_permissions(victim_Remove, victim_Remove->virtual_address);
+				    if(page_permissions & PERM_MODIFIED){
+					   //write it to disk
+					   LIST_REMOVE(&(curenv->SecondList),victim_Remove);
+					   }
+					 else {
+						   LIST_REMOVE(&(curenv->SecondList),victim_Remove);
+					   }
+					struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
+					LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
+			        pt_set_page_permissions(PDX (elem_Move->virtual_address),elem_Move->virtual_address,0,PERM_PRESENT);
+
+					LIST_INSERT_HEAD(&(curenv->ActiveList),elem_set);
+					pt_set_page_permissions(curenv->env_page_directory,fault_va,1,PERM_PRESENT);
+
+					   }
 			   }
 
 			//TODO: [PROJECT'23.MS3 - BONUS] [1] PAGE FAULT HANDLER - O(1) implementation of LRU replacement
