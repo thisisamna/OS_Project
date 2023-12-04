@@ -144,13 +144,13 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 			//TODO: [PROJECT'23.MS3 - #2] [1] PAGE FAULT HANDLER - LRU Replacement
 			// Write your code here, remove the panic and write your code
 			//panic("page_fault_handler() LRU Replacement is not implemented yet...!!");
-			int ActiveSize=LIST_SIZE(&(curenv->ActiveList));
-			int SecondSize=LIST_SIZE(&(curenv->SecondList));
+			int ActiveSize=LIST_SIZE(&(curenv->ActiveList)); //not max just its self
+			int SecondSize=LIST_SIZE(&(curenv->SecondList));  //not max just its self
 			 if((ActiveSize + SecondSize) < (curenv->page_WS_max_size))
 			   {
 			      //TODO: [PROJECT'23.MS3 - #2] [1] PAGE FAULT HANDLER – LRU Placement
 				 //if there's space in active list
-				 if((ActiveSize) < (curenv->ActiveListSize))
+				 if((ActiveSize) < (curenv->ActiveListSize))  // its self < its max
 				 {
 					struct WorkingSetElement *element;
 					struct WorkingSetElement *newElement= env_page_ws_list_create_element(curenv, fault_va);
@@ -184,6 +184,18 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 			   else
 			   {
 			      //TODO: [PROJECT'23.MS3 - #1] [1] PAGE FAULT HANDLER - LRU Replacement
+				   struct WorkingSetElement *victim_Remove = LIST_LAST(&(curenv->SecondList));
+				   //check if modifird => write it to disk
+				   uint32 page_permissions = pt_get_page_permissions(victim_Remove, victim_Remove->virtual_address);
+				   if(page_permissions & PERM_MODIFIED){
+					   //write it to disk
+				   LIST_REMOVE(&(curenv->SecondList),victim_Remove);
+				   }
+				   else {
+					   LIST_REMOVE(&(curenv->SecondList),victim_Remove);
+				   }
+				   struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
+				   LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
 
 			   }
 
