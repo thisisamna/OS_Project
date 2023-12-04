@@ -34,7 +34,6 @@ struct Env_Queue env_exit_queue;	// queue of all exited envs
 	uint8 quantums[1] ;					// Quantum in ms for RR
 #endif
 uint8 num_of_ready_queues ;			// Number of ready queue(s)
-uint32 num_of_ready_processes; //bid3a
 //===============
 
 //2015

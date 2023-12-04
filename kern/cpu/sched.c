@@ -57,12 +57,10 @@ fos_scheduler(void)
 		if (curenv != NULL)
 		{
 			enqueue(&(env_ready_queues[0]), curenv);
-			num_of_ready_processes++;
 		}
 
 		//Pick the next environment from the ready queue
 		next_env = dequeue(&(env_ready_queues[0]));
-		num_of_ready_processes--;
 
 		//Reset the quantum
 		//2017: Reset the value of CNT0 for the next clock interval
@@ -210,6 +208,16 @@ void clock_interrupt_handler()
 		curenv->recent_cpu++;
 		if((ticks*quantums[0])%1000==0)//second has passed
 		{
+			//count ready processes.. optimizable?
+			uint32 num_of_ready_processes =0;
+			for(int i=0;i<num_of_ready_queues;i++)
+			{
+				num_of_ready_processes+= queue_size(env_ready_queues[i]);
+
+			}
+			if(curenv!=NULL)
+				num_of_ready_processes++;
+			//calculate load average
 			load_avg=fix_scale(fix_unscale(load_avg,60),59)+fix_unscale(fix_int(num_of_ready_processes),60);
 			//calculate receent cpu for every process
 
