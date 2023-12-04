@@ -182,7 +182,7 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 
 			   }
 			 else
-			 {
+			 {          ///ToTa
 				 //TODO: [PROJECT'23.MS3 - #1] [1] PAGE FAULT HANDLER - LRU Replacement
 				struct WorkingSetElement *elem_set= env_page_ws_list_create_element(curenv, fault_va);
 				struct WorkingSetElement *element;
@@ -191,10 +191,10 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 
 					if(elem_set==element){
 						LIST_INSERT_HEAD(&(curenv->ActiveList),element);
-						pt_set_page_permissions(PDX (element->virtual_address),element->virtual_address,1,PERM_PRESENT);
+						pt_set_page_permissions(curenv->env_page_directory,element->virtual_address,1,PERM_PRESENT);
 						struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
 						LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
-						 pt_set_page_permissions(PDX (elem_Move->virtual_address),elem_Move->virtual_address,0,PERM_PRESENT);
+						 pt_set_page_permissions(curenv->env_page_directory,elem_Move->virtual_address,0,PERM_PRESENT);
 
 					}
 
@@ -202,8 +202,8 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 
 			   // else {
 		            struct WorkingSetElement *victim_Remove = LIST_LAST(&(curenv->SecondList));
-				   //check if modifird => write it to disk
-			       uint32 page_permissions = pt_get_page_permissions(victim_Remove, victim_Remove->virtual_address);
+				   //check if modified => write it to disk
+			       uint32 page_permissions = pt_get_page_permissions(curenv->env_page_directory,(uint32)victim_Remove->virtual_address);
 				    if(page_permissions & PERM_MODIFIED){
 					   //write it to disk
 					   LIST_REMOVE(&(curenv->SecondList),victim_Remove);
@@ -213,7 +213,8 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 					   }
 					struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
 					LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
-			        pt_set_page_permissions(PDX (elem_Move->virtual_address),elem_Move->virtual_address,0,PERM_PRESENT);
+					//PDX (elem_Move->virtual_address) in case using curenv is false replace it with that .
+			        pt_set_page_permissions(curenv->env_page_directory,elem_Move->virtual_address,0,PERM_PRESENT);
 
 					LIST_INSERT_HEAD(&(curenv->ActiveList),elem_set);
 					pt_set_page_permissions(curenv->env_page_directory,fault_va,1,PERM_PRESENT);
