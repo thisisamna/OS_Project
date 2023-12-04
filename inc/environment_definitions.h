@@ -90,7 +90,7 @@ struct Env {
 	char prog_name[PROGNAMELEN];	// Program name (to print it via USER.cprintf in multitasking)
 	/*BSD Additions*/
 	int32 nice;						//nice value,bid3a
-	int32 recent_cpu;		//recent cpu usage, bid3a
+	fixed_point_t recent_cpu;		//recent cpu usage, bid3a
 	//================
 	/*ADDRESS SPACE*/
 	//================

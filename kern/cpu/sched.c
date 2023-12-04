@@ -210,13 +210,11 @@ void clock_interrupt_handler()
 		curenv->recent_cpu++;
 		if((ticks*quantums[0])%1000==0)//second has passed
 		{
-			fixed_point_t temp;
-			temp=(fix_int(load_avg)/60)*59+fix_int(num_of_ready_processes)/60;
-			load_avg=fix_round(temp);
+			load_avg=fix_scale(fix_unscale(load_avg,60),59)+fix_unscale(fix_int(num_of_ready_processes),60);
 			//calculate receent cpu for every process
 
 		}
-		if(  ticks%4==0)
+		if(ticks%4==0)
 		{
 			//recalculate priority and reorder queues
 			//loop on all envs

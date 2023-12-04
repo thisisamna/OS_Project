@@ -57,7 +57,7 @@ int64 timer_ticks() ;
 struct Env* fos_scheduler_BSD();
 void sched_init_BSD(uint8 numOfLevels, uint8 quantum);
 uint32 isSchedMethodBSD();
-uint32 load_avg; //bid3a
+fixed_point_t load_avg; //bid3a
 
 /********* for BSD Priority Scheduler *************/
 
