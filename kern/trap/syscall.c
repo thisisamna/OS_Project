@@ -557,6 +557,9 @@ void* sys_sbrk(int increment)
 
 
 }
+void sys_env_set_nice(){
+	env_set_nice();
+}
 
 /**************************************************************************/
 /************************* SYSTEM CALLS HANDLER ***************************/
@@ -591,6 +594,9 @@ uint32 syscall(uint32 syscallno, uint32 a1, uint32 a2, uint32 a3, uint32 a4, uin
 	case SYS_get_hard_limit:
 		return (uint32)sys_get_hard_limit();
 		break;
+	case SYS_env_set_nice:
+		 (void) sys_env_set_nice();
+		 break;
 	case SYS_cputs:
 		sys_cputs((const char*)a1,a2,(uint8)a3);
 		return 0;
