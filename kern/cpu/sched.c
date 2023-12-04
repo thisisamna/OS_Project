@@ -221,14 +221,21 @@ void clock_interrupt_handler()
 			load_avg=fix_add(fix_scale(fix_unscale(load_avg,60),59),fix_unscale(fix_int(num_of_ready_processes),60));
 			//calculate recent cpu for every process
 			fixed_point_t coefficient;
+			struct Env* env;
+			//ready processes
 			for(int i=0;i<num_of_ready_queues;i++)
 			{
-				struct Env* env;
 				LIST_FOREACH(env, &(env_ready_queues[i]))
 				{
 					coefficient = fix_div(fix_scale(load_avg,2), fix_add(fix_scale(load_avg,2), fix_int(1)));
 					env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
 				}
+			}
+			//new processes
+			LIST_FOREACH(env, &env_new_queue)
+			{
+				coefficient = fix_div(fix_scale(load_avg,2), fix_add(fix_scale(load_avg,2), fix_int(1)));
+				env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
 			}
 
 		}
