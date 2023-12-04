@@ -1,7 +1,6 @@
 #include "sched.h"
 
 #include <inc/assert.h>
-
 #include <kern/proc/user_environment.h>
 #include <kern/trap/trap.h>
 #include <kern/mem/kheap.h>
@@ -206,7 +205,29 @@ void clock_interrupt_handler()
 {
 	//TODO: [PROJECT'23.MS3 - #5] [2] BSD SCHEDULER - Your code is here
 	{
+		curenv->recent_cpu = fix_add(curenv->recent_cpu,fix_int(1));
+		if((ticks*quantums[0])%1000==0)//second has passed
+		{
+			//count ready processes.. optimizable?
+			uint32 num_of_ready_processes =0;
+			for(int i=0;i<num_of_ready_queues;i++)
+			{
+				num_of_ready_processes+= queue_size(&(env_ready_queues[i]));
 
+			}
+			if(curenv!=NULL)
+				num_of_ready_processes++;
+			//calculate load average
+			load_avg=fix_add(fix_scale(fix_unscale(load_avg,60),59),fix_unscale(fix_int(num_of_ready_processes),60));
+			//calculate receent cpu for every process
+
+
+		}
+		if(ticks%4==0)
+		{
+			//recalculate priority and reorder queues
+			//loop on all envs
+		}
 
 
 	}
