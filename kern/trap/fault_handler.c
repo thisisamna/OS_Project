@@ -184,7 +184,7 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 			 else
 			 {          ///ToTa
 				 //TODO: [PROJECT'23.MS3 - #1] [1] PAGE FAULT HANDLER - LRU Replacement
-				struct WorkingSetElement *elem_set= env_page_ws_list_create_element(curenv, fault_va);
+				struct WorkingSetElement *elem_set= (struct WorkingSetElement *)fault_va; //env_page_ws_list_create_element(curenv, fault_va);
 				struct WorkingSetElement *element;
 
 				LIST_FOREACH (element, &(curenv->SecondList)){
