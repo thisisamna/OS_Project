@@ -167,11 +167,8 @@ void sched_init_BSD(uint8 numOfLevels, uint8 quantum)
 
 	num_of_ready_queues = numOfLevels;
 	struct Env_Queue *env_ready_queues [numOfLevels];
-
-	for(int i = 0; i<numOfLevels; i++)
-	{
-		env_ready_queues = kmalloc(num_of_ready_queues * sizeof(struct Env_Queue));
-	}
+	env_ready_queues = kmalloc(num_of_ready_queues * sizeof(struct Env_Queue));
+	// i was going to call queueinit but i'm not really sure
 	quantums = kmalloc(num_of_ready_queues * sizeof(uint8)) ;
 
 	//=========================================
@@ -203,10 +200,14 @@ struct Env* fos_scheduler_BSD()
 	//Comment the following line
 	//panic("Not implemented yet");
 
-		if(queue_size(&env_ready_queues) > 0)
+		for(int i = 0; i<num_of_ready_queues; i++)
 		{
-			return dequeue(&env_ready_queues);
+			if(queue_size(&env_ready_queues[i]) > 0)
+			{
+				return dequeue(&env_ready_queues[i]);
+			}
 		}
+
 
 	return NULL;
 }
