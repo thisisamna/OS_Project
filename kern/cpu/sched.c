@@ -164,7 +164,15 @@ void sched_init_BSD(uint8 numOfLevels, uint8 quantum)
 	//TODO: [PROJECT'23.MS3 - #4] [2] BSD SCHEDULER - sched_init_BSD
 	//Your code is here
 	//Comment the following line
-	panic("Not implemented yet");
+
+	num_of_ready_queues = numOfLevels;
+	struct Env_Queue *env_ready_queues [numOfLevels];
+
+	for(int i = 0; i<numOfLevels; i++)
+	{
+		env_ready_queues[i] = kmalloc(sizeof(struct Env_Queue));
+	}
+	quantums = kmalloc(num_of_ready_queues * sizeof(uint8)) ;
 
 	//=========================================
 	//DON'T CHANGE THESE LINES=================
@@ -193,7 +201,14 @@ struct Env* fos_scheduler_BSD()
 	//TODO: [PROJECT'23.MS3 - #5] [2] BSD SCHEDULER - fos_scheduler_BSD
 	//Your code is here
 	//Comment the following line
-	panic("Not implemented yet");
+	//panic("Not implemented yet");
+	for(int i = 0; i <num_of_ready_queues; i++)
+	{
+		if(queue_size(&env_ready_queues[i]) > 0)
+		{
+			return dequeue(&env_ready_queues[i]);
+		}
+	}
 	return NULL;
 }
 

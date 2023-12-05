@@ -274,6 +274,11 @@ void sys_allocate_user_mem(uint32 virtual_address, uint32 size)
 	return;
 }
 
+void sys_env_set_nice(struct Env* e, int nice_value)
+{
+	env_set_nice(e, nice_value);
+	return;
+}
 void sys_allocate_chunk(uint32 virtual_address, uint32 size, uint32 perms)
 {
 	allocate_chunk(curenv->env_page_directory, virtual_address, size, perms);
@@ -558,6 +563,7 @@ void* sys_sbrk(int increment)
 
 }
 
+
 /**************************************************************************/
 /************************* SYSTEM CALLS HANDLER ***************************/
 /**************************************************************************/
@@ -571,12 +577,9 @@ uint32 syscall(uint32 syscallno, uint32 a1, uint32 a2, uint32 a3, uint32 a4, uin
 	/*2023*/
 	//TODO: [PROJECT'23.MS1 - #4] [2] SYSTEM CALLS - Add suitable code here
 	case SYS_sbrk:
-	        return (uint32)sys_sbrk(a1);
-
+	    return (uint32)sys_sbrk(a1);
 	    break;
-	case SYS_env_set_nice:
-		 (void) sys_env_set_nice();
-		 break;
+
 	case SYS_free_user_mem:
 		   if(a1 != 0 && a1<USER_LIMIT && a1+a2 <USER_LIMIT)
 		        sys_free_user_mem(a1, a2);
@@ -594,6 +597,11 @@ uint32 syscall(uint32 syscallno, uint32 a1, uint32 a2, uint32 a3, uint32 a4, uin
 	case SYS_get_hard_limit:
 		return (uint32)sys_get_hard_limit();
 		break;
+
+	case SYS_env_set_nice:
+		 (void) sys_env_set_nice((struct Env*) a1, (int) a1);
+		 return 0;
+		 break;
 	case SYS_cputs:
 		sys_cputs((const char*)a1,a2,(uint8)a3);
 		return 0;
