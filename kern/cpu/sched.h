@@ -1,6 +1,6 @@
 /* See COPYRIGHT for copyright information. */
 
-#ifndef FOS_KERN_SCHED_H
+#ifndef FOS_KERN_SCHED_H7u
 #define FOS_KERN_SCHED_H
 #ifndef FOS_KERNEL
 # error "This is a FOS kernel header; user programs should not #include it"
@@ -56,6 +56,8 @@ int64 timer_ticks() ;
 struct Env* fos_scheduler_BSD();
 void sched_init_BSD(uint8 numOfLevels, uint8 quantum);
 uint32 isSchedMethodBSD();
+fixed_point_t load_avg; //bid3a
+
 /********* for BSD Priority Scheduler *************/
 
 void sched_init_RR(uint8 quantum);

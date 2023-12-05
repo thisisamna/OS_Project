@@ -1,7 +1,6 @@
 #include "sched.h"
 
 #include <inc/assert.h>
-
 #include <kern/proc/user_environment.h>
 #include <kern/trap/trap.h>
 #include <kern/mem/kheap.h>
@@ -165,7 +164,15 @@ void sched_init_BSD(uint8 numOfLevels, uint8 quantum)
 	//TODO: [PROJECT'23.MS3 - #4] [2] BSD SCHEDULER - sched_init_BSD
 	//Your code is here
 	//Comment the following line
-	panic("Not implemented yet");
+
+	num_of_ready_queues = numOfLevels;
+	struct Env_Queue *env_ready_queues [numOfLevels];
+
+	for(int i = 0; i<numOfLevels; i++)
+	{
+		env_ready_queues[i] = kmalloc(sizeof(struct Env_Queue));
+	}
+	quantums = kmalloc(num_of_ready_queues * sizeof(uint8)) ;
 
 	//=========================================
 	//DON'T CHANGE THESE LINES=================
@@ -194,7 +201,14 @@ struct Env* fos_scheduler_BSD()
 	//TODO: [PROJECT'23.MS3 - #5] [2] BSD SCHEDULER - fos_scheduler_BSD
 	//Your code is here
 	//Comment the following line
-	panic("Not implemented yet");
+	//panic("Not implemented yet");
+	for(int i = 0; i <num_of_ready_queues; i++)
+	{
+		if(queue_size(&env_ready_queues[i]) > 0)
+		{
+			return dequeue(&env_ready_queues[i]);
+		}
+	}
 	return NULL;
 }
 
@@ -206,7 +220,54 @@ void clock_interrupt_handler()
 {
 	//TODO: [PROJECT'23.MS3 - #5] [2] BSD SCHEDULER - Your code is here
 	{
+		fixed_point_t coefficient;
+		struct Env* env;
+		curenv->recent_cpu = fix_add(curenv->recent_cpu,fix_int(1));
+		if((ticks*quantums[0])%1000==0)//second has passed
+		{
+			//count ready processes.. optimizable?
+			uint32 num_of_ready_processes =0;
+			for(int i=0;i<num_of_ready_queues;i++)
+			{
+				num_of_ready_processes+= queue_size(&(env_ready_queues[i]));
 
+			}
+			if(curenv!=NULL)
+				num_of_ready_processes++;
+			//calculate load average
+			load_avg=fix_add(fix_scale(fix_unscale(load_avg,60),59),fix_unscale(fix_int(num_of_ready_processes),60));
+			//calculate recent cpu for every process
+
+			//ready processes
+			for(int i=0;i<num_of_ready_queues;i++)
+			{
+				LIST_FOREACH(env, &(env_ready_queues[i]))
+				{
+					coefficient = fix_div(fix_scale(load_avg,2), fix_add(fix_scale(load_avg,2), fix_int(1)));
+					env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
+				}
+			}
+			//new processes
+			LIST_FOREACH(env, &env_new_queue)
+			{
+				coefficient = fix_div(fix_scale(load_avg,2), fix_add(fix_scale(load_avg,2), fix_int(1)));
+				env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
+			}
+
+		}
+		if(ticks%4==0)
+		{
+			//recalculate priority and reorder queues
+			//loop on all envs
+			for(int i=0;i<num_of_ready_queues;i++)
+			{
+				LIST_FOREACH(env, &(env_ready_queues[i]))
+				{
+					env->priority=PRI_MAX-fix_trunc(fix_unscale(env->recent_cpu,4))-(env->nice*2);
+				}
+			}
+
+		}
 
 
 	}
