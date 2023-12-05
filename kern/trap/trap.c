@@ -337,6 +337,8 @@ void fault_handler(struct Trapframe *tf)
 		num_repeated_fault = 0;
 	}
 	last_fault_va = fault_va ;
+
+
 	/******************************************************/
 	//2017: Check stack overflow for Kernel
 	if (!userTrap)
@@ -429,15 +431,7 @@ void fault_handler(struct Trapframe *tf)
 		//		cprintf("\nPage working set BEFORE fault handler...\n");
 		//		env_page_ws_print(curenv);
 
-		if(isBufferingEnabled())
-		{
-			__page_fault_handler_with_buffering(faulted_env, fault_va);
-		}
-		else
-		{
-			//page_fault_handler(faulted_env, fault_va);
-			page_fault_handler(faulted_env, fault_va);
-		}
+
 		//		cprintf("\nPage working set AFTER fault handler...\n");
 		//		env_page_ws_print(curenv);
 
