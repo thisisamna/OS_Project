@@ -2,7 +2,7 @@
 
 #ifndef FOS_INC_ENV_H
 #define FOS_INC_ENV_H
-
+#include <inc/fixed_point.h>
 #include <inc/types.h>
 #include <inc/queue.h>
 #include <inc/trap.h>
@@ -88,7 +88,9 @@ struct Env {
 	unsigned env_status;			// Status of the environment
 	int priority;					// Current priority
 	char prog_name[PROGNAMELEN];	// Program name (to print it via USER.cprintf in multitasking)
-
+	/*BSD Additions*/
+	int32 nice;						//nice value,bid3a
+	fixed_point_t recent_cpu;		//recent cpu usage, bid3a
 	//================
 	/*ADDRESS SPACE*/
 	//================

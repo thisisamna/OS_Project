@@ -58,6 +58,8 @@ enum
 	SYS_allocate_user_mem,
 	//=====================================================================
 	SYS_get_hard_limit,
+	SYS_env_set_nice,
+
 	NSYSCALLS
 };
 
