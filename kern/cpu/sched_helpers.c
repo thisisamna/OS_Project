@@ -558,11 +558,8 @@ void env_set_nice(struct Env* e, int nice_value)
 	//Comment the following line
 	//panic("Not implemented yet");
 	e->nice=nice_value;
-<<<<<<< HEAD
-	e->priority=PRI_MAX-(fix_unscale(e->recent_cpu,4))-(e->nice,2);
-=======
-	e->priority=PRI_MAX-(e->recent_cpu/4)-(e->nice*2);
->>>>>>> 56cfaccc7f6d9c698157adb6f28299e21ada5fb9
+	//e->priority=PRI_MAX-(fix_unscale(e->recent_cpu,4))-(e->nice,2);
+
 }
 int env_get_recent_cpu(struct Env* e)
 {
@@ -570,11 +567,9 @@ int env_get_recent_cpu(struct Env* e)
 	//Your code is here
 	//Comment the following line
 	//panic("Not implemented yet");
-<<<<<<< HEAD
-	return  fix_round(fix_scale(e->recent_cpu,100)) ;
-=======
-	return  fix_round(e->recent_cpu*100) ;
->>>>>>> 56cfaccc7f6d9c698157adb6f28299e21ada5fb9
+
+	return  fix_round(fix_scale(e->recent_cpu,100));
+
 }
 int get_load_average()
 {
@@ -582,12 +577,9 @@ int get_load_average()
 	//Your code is here
 	//Comment the following line
 	//panic("Not implemented yet");
-<<<<<<< HEAD
+
 	return fix_round(fix_scale(load_avg,100));
 
-=======
-	return fix_round(load_avg*100);
->>>>>>> 56cfaccc7f6d9c698157adb6f28299e21ada5fb9
 }
 /********* for BSD Priority Scheduler *************/
 //==================================================================================//

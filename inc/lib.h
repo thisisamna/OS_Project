@@ -79,6 +79,7 @@ uint32 	sys_isUHeapPlacementStrategyNEXTFIT();
 uint32 	sys_isUHeapPlacementStrategyWORSTFIT();
 void 	sys_set_uheap_strategy(uint32 heapStrategy);
 uint32 sys_get_hard_limit(void);
+void sys_env_set_nice();
 
 
 //Page File

@@ -3,10 +3,6 @@
 #ifndef FOS_INC_ENV_H
 #define FOS_INC_ENV_H
 #include <inc/fixed_point.h>
-<<<<<<< HEAD
-=======
-
->>>>>>> 56cfaccc7f6d9c698157adb6f28299e21ada5fb9
 #include <inc/types.h>
 #include <inc/queue.h>
 #include <inc/trap.h>
