@@ -254,6 +254,7 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 				 c=1;
 				struct WorkingSetElement *carry_elem_set = elem_set; // i put it in carry_elem
 				LIST_REMOVE(&(curenv->SecondList),elem_set);   //remove it to space
+				env_page_ws_invalidate(curenv, elem_set->virtual_address);
 
 				struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
 				LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
@@ -274,12 +275,18 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 		uint32 page_permissions = pt_get_page_permissions(curenv->env_page_directory,(uint32)victim_Remove->virtual_address);
 		if(page_permissions & PERM_MODIFIED)
 		{
-		  //write it to disk
+		  //write it to disk(update)
+			uint32 *ptr_table = NULL;
+			struct FrameInfo *victim_Remove_iNFO = get_frame_info(curenv->env_page_directory, (uint32)victim_Remove->virtual_address , &ptr_table);
+			pf_update_env_page(curenv, (uint32)victim_Remove->virtual_address, victim_Remove_iNFO);
+
 		LIST_REMOVE(&(curenv->SecondList),victim_Remove);
+		env_page_ws_invalidate(curenv, victim_Remove->virtual_address);
 		 }
 		 else
 		 {
      	 LIST_REMOVE(&(curenv->SecondList),victim_Remove);
+     	env_page_ws_invalidate(curenv, victim_Remove->virtual_address);
 		 }
 		struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
 		LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
