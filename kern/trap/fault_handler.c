@@ -286,6 +286,7 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 
 						LIST_INSERT_HEAD(&(curenv->ActiveList),elem_set);
 						pt_set_page_permissions(curenv->env_page_directory,fault_va,1,PERM_PRESENT);
+						break;
 			}
 
 		}
