@@ -265,29 +265,30 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 				if(c)
 					break;
 			}
+		}
 
-			else {
-				struct WorkingSetElement *victim_Remove = LIST_LAST(&(curenv->SecondList));
-						//check if modified => write it to disk
-						uint32 page_permissions = pt_get_page_permissions(curenv->env_page_directory,(uint32)victim_Remove->virtual_address);
-						if(page_permissions & PERM_MODIFIED)
-						{
-						   //write it to disk
-						   LIST_REMOVE(&(curenv->SecondList),victim_Remove);
-						}
-						 else
-						 {
-							 LIST_REMOVE(&(curenv->SecondList),victim_Remove);
-						 }
-						struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
-						LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
-						//PDX (elem_Move->virtual_address) in case using curenv is false replace it with that .
-						pt_set_page_permissions(curenv->env_page_directory,elem_Move->virtual_address,0,PERM_PRESENT);
+		if(!c){
 
-						LIST_INSERT_HEAD(&(curenv->ActiveList),elem_set);
-						pt_set_page_permissions(curenv->env_page_directory,fault_va,1,PERM_PRESENT);
-						break;
-			}
+		struct WorkingSetElement *victim_Remove = LIST_LAST(&(curenv->SecondList));
+		//check if modified => write it to disk
+		uint32 page_permissions = pt_get_page_permissions(curenv->env_page_directory,(uint32)victim_Remove->virtual_address);
+		if(page_permissions & PERM_MODIFIED)
+		{
+		  //write it to disk
+		LIST_REMOVE(&(curenv->SecondList),victim_Remove);
+		 }
+		 else
+		 {
+     	 LIST_REMOVE(&(curenv->SecondList),victim_Remove);
+		 }
+		struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
+		LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
+		//PDX (elem_Move->virtual_address) in case using curenv is false replace it with that .
+		pt_set_page_permissions(curenv->env_page_directory,elem_Move->virtual_address,0,PERM_PRESENT);
+
+		LIST_INSERT_HEAD(&(curenv->ActiveList),elem_set);
+		pt_set_page_permissions(curenv->env_page_directory,fault_va,1,PERM_PRESENT);
+			break;
 
 		}
 
