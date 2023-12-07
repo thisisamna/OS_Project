@@ -220,6 +220,8 @@ void clock_interrupt_handler()
 {
 	//TODO: [PROJECT'23.MS3 - #5] [2] BSD SCHEDULER - Your code is here
 	{
+		fixed_point_t coefficient;
+		struct Env* env;
 		curenv->recent_cpu = fix_add(curenv->recent_cpu,fix_int(1));
 		if((ticks*quantums[0])%1000==0)//second has passed
 		{
@@ -234,14 +236,37 @@ void clock_interrupt_handler()
 				num_of_ready_processes++;
 			//calculate load average
 			load_avg=fix_add(fix_scale(fix_unscale(load_avg,60),59),fix_unscale(fix_int(num_of_ready_processes),60));
-			//calculate receent cpu for every process
+			//calculate recent cpu for every process
 
+			//ready processes
+			for(int i=0;i<num_of_ready_queues;i++)
+			{
+				LIST_FOREACH(env, &(env_ready_queues[i]))
+				{
+					coefficient = fix_div(fix_scale(load_avg,2), fix_add(fix_scale(load_avg,2), fix_int(1)));
+					env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
+				}
+			}
+			//new processes
+			LIST_FOREACH(env, &env_new_queue)
+			{
+				coefficient = fix_div(fix_scale(load_avg,2), fix_add(fix_scale(load_avg,2), fix_int(1)));
+				env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
+			}
 
 		}
 		if(ticks%4==0)
 		{
 			//recalculate priority and reorder queues
 			//loop on all envs
+			for(int i=0;i<num_of_ready_queues;i++)
+			{
+				LIST_FOREACH(env, &(env_ready_queues[i]))
+				{
+					env->priority=PRI_MAX-fix_trunc(fix_unscale(env->recent_cpu,4))-(env->nice*2);
+				}
+			}
+
 		}
 
 
