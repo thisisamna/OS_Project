@@ -257,13 +257,21 @@ void clock_interrupt_handler()
 		}
 		if(ticks%4==0)
 		{
+			uint32 priority;
 			//recalculate priority and reorder queues
 			//loop on all envs
 			for(int i=0;i<num_of_ready_queues;i++)
 			{
 				LIST_FOREACH(env, &(env_ready_queues[i]))
 				{
-					env->priority=PRI_MAX-fix_trunc(fix_unscale(env->recent_cpu,4))-(env->nice*2);
+					priority=PRI_MAX-fix_trunc(fix_unscale(env->recent_cpu,4))-(env->nice*2);
+					if(priority>=PRI_MAX)
+						env->priority=PRI_MAX;
+					else if(priority<=PRI_MIN)
+						env->priority=PRI_MIN;
+					else
+						env->priority=priority;
+
 				}
 			}
 
