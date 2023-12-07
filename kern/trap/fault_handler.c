@@ -215,54 +215,70 @@ cprintf("Fault va: %x \n", fault_va);
 
 		   }
 		 else
-		 {          ///ToTa
-			 //TODO: [PROJECT'23.MS3 - #1] [1] PAGE FAULT HANDLER - LRU Replacement
-			struct WorkingSetElement *elem_set= env_page_ws_list_create_element(curenv, fault_va);
-			struct WorkingSetElement *element;
+		 	 {          ///ToTa
+		 		 //TODO: [PROJECT'23.MS3 - #1] [1] PAGE FAULT HANDLER - LRU Replacement
+		 		struct WorkingSetElement *elem_set= (struct WorkingSetElement *)fault_va;
+		 		struct WorkingSetElement *element;
+		 		bool c=0;
+		 		LIST_FOREACH (element, &(curenv->SecondList))
+		 		{
 
-			LIST_FOREACH (element, &(curenv->SecondList)){
+		 			if(elem_set==element)
+		 			{
+		 				 c=1;
+		 				struct WorkingSetElement *carry_elem_set = elem_set; // i put it in carry_elem
+		 				LIST_REMOVE(&(curenv->SecondList),elem_set);   //remove it to space
+		 				env_page_ws_invalidate(curenv, elem_set->virtual_address);
 
-				if(elem_set==element){
-					LIST_INSERT_HEAD(&(curenv->ActiveList),element);
-					pt_set_page_permissions(curenv->env_page_directory,element->virtual_address,1,PERM_PRESENT);
-					struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
-					LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
-					 pt_set_page_permissions(curenv->env_page_directory,elem_Move->virtual_address,0,PERM_PRESENT);
+		 				struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
+		 				LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
+		 				pt_set_page_permissions(curenv->env_page_directory,elem_Move->virtual_address,0,PERM_PRESENT);
 
-				}
+		 				LIST_INSERT_HEAD(&(curenv->ActiveList),carry_elem_set);
+		 				pt_set_page_permissions(curenv->env_page_directory,fault_va,PERM_PRESENT,0);
+		 				if(c)
+		 					break;
+		 			}
+		 		}
 
-			}
+		 		if(c==0){
 
-		   // else {
-				struct WorkingSetElement *victim_Remove = LIST_LAST(&(curenv->SecondList));
-			   //check if modified => write it to disk
-			   uint32 page_permissions = pt_get_page_permissions(curenv->env_page_directory,(uint32)victim_Remove->virtual_address);
-				if(page_permissions & PERM_MODIFIED){
-				   //write it to disk
-				   LIST_REMOVE(&(curenv->SecondList),victim_Remove);
-				   }
-				 else {
-					   LIST_REMOVE(&(curenv->SecondList),victim_Remove);
-				   }
-				struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
-				LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
-				//PDX (elem_Move->virtual_address) in case using curenv is false replace it with that .
-				pt_set_page_permissions(curenv->env_page_directory,elem_Move->virtual_address,0,PERM_PRESENT);
+		 		struct WorkingSetElement *victim_Remove = LIST_LAST(&(curenv->SecondList));
+		 		//check if modified => write it to disk
+		 		uint32 page_permissions = pt_get_page_permissions(curenv->env_page_directory,(uint32)victim_Remove->virtual_address);
+		 		if(page_permissions & PERM_MODIFIED)
+		 		{
+		 		  //write it to disk(update)
+		 			uint32 *ptr_table = NULL;
+		 			struct FrameInfo *victim_Remove_iNFO = get_frame_info(curenv->env_page_directory, (uint32)victim_Remove->virtual_address , &ptr_table);
+		 			pf_update_env_page(curenv, (uint32)victim_Remove->virtual_address, victim_Remove_iNFO);
 
-				LIST_INSERT_HEAD(&(curenv->ActiveList),elem_set);
-				pt_set_page_permissions(curenv->env_page_directory,fault_va,1,PERM_PRESENT);
+		 		LIST_REMOVE(&(curenv->SecondList),victim_Remove);
+		 		env_page_ws_invalidate(curenv, victim_Remove->virtual_address);
+		 		 }
+		 		 else
+		 		 {
+		      	 LIST_REMOVE(&(curenv->SecondList),victim_Remove);
+		      	env_page_ws_invalidate(curenv, victim_Remove->virtual_address);
+		 		 }
+		 		struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
+		 		LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
+		 		//PDX (elem_Move->virtual_address) in case using curenv is false replace it with that .
+		 		pt_set_page_permissions(curenv->env_page_directory,elem_Move->virtual_address,0,PERM_PRESENT);
 
-				  // }
-		   }
-
-		//TODO: [PROJECT'23.MS3 - BONUS] [1] PAGE FAULT HANDLER - O(1) implementation of LRU replacement
-	}
-}
-
-void __page_fault_handler_with_buffering(struct Env * curenv, uint32 fault_va)
-{
-	panic("this function is not required...!!");
-}
+		 		LIST_INSERT_HEAD(&(curenv->ActiveList),elem_set);
+		 		pt_set_page_permissions(curenv->env_page_directory,fault_va,PERM_PRESENT,0);
 
 
+		 		}
 
+
+		 	 }
+
+		 		//TODO: [PROJECT'23.MS3 - BONUS] [1] PAGE FAULT HANDLER - O(1) implementation of LRU replacement
+		 	}
+		 }
+		 void __page_fault_handler_with_buffering(struct Env * curenv, uint32 fault_va)
+		 {
+		 	panic("this function is not required...!!");
+		 }
