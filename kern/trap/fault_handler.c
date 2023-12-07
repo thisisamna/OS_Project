@@ -84,6 +84,8 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 #endif
 	if(isPageReplacmentAlgorithmFIFO())
 	{
+		uint32 *ptr_table = NULL;
+
 		if(wsSize < (curenv->page_WS_max_size))
 		{
 			//cprintf("PLACEMENT=========================WS Size = %d\n", wsSize );
@@ -108,6 +110,7 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 				else
 				{
 
+					cprintf("fifo kill\n");
 					sched_kill_env(curenv->env_id);
 					return;
 				}
@@ -139,7 +142,6 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 			//cprintf("REPLACEMENT=========================WS Size = %d\n", wsSize );
 			//refer to the project presentation and documentation for details
 			void* va= (void*)fault_va;
-			uint32 *ptr_table = NULL;
 
 			struct WorkingSetElement *victim = LIST_FIRST(&(curenv->page_WS_list));
 
@@ -173,8 +175,10 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 	}
 	if(isPageReplacmentAlgorithmLRU(PG_REP_LRU_LISTS_APPROX))
 	{
-		cprintf("Fault va: %x \n", fault_va);
+		uint32 *ptr_table = NULL;
+		 struct WorkingSetElement *element;
 
+		cprintf("Fault va: %x \n", fault_va);
 		//TODO: [PROJECT'23.MS3 - #2] [1] PAGE FAULT HANDLER - LRU Replacement
 		// Write your code here, remove the panic and write your code
 		//panic("page_fault_handler() LRU Replacement is not implemented yet...!!");
@@ -184,13 +188,17 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 		   {
 			  //TODO: [PROJECT'23.MS3 - #2] [1] PAGE FAULT HANDLER – LRU Placement
 			 //if there's space in active list
-			 if((ActiveSize) < (curenv->ActiveListSize))  // its self < its max
+				void* va= (void*)fault_va;
+				struct FrameInfo *ptr_frame_info=NULL;
+				allocate_frame(&ptr_frame_info);
+				map_frame(curenv->env_page_directory,ptr_frame_info,fault_va,PERM_AVAILABLE | PERM_PRESENT|PERM_USER|PERM_WRITEABLE);
+
+			 struct WorkingSetElement *newElement= env_page_ws_list_create_element(curenv, fault_va);
+			 if((ActiveSize) < (curenv->ActiveListSize))  //will add to active list
 			 {
-				struct WorkingSetElement *element;
-				struct WorkingSetElement *newElement= env_page_ws_list_create_element(curenv, fault_va);
 				LIST_FOREACH(element,&(curenv->SecondList))
 				{
-					if(element == newElement)
+					if(element->virtual_address == fault_va)
 					{
 						//pt_set_page_permissions(curenv->SecondList,fault_va,1,PERM_PRESENT);
 						LIST_REMOVE(&(curenv->SecondList),newElement);
@@ -218,57 +226,58 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 		 else
 		 {          ///ToTa
 			 //TODO: [PROJECT'23.MS3 - #1] [1] PAGE FAULT HANDLER - LRU Replacement
-			struct WorkingSetElement *elem_set= (struct WorkingSetElement *)fault_va;
-			struct WorkingSetElement *element;
-			bool c=0;
+			int inSecondList=0;
 			LIST_FOREACH (element, &(curenv->SecondList))
 			{
 
 				if(element->virtual_address==fault_va)
 				{
-					 c=1;
-					struct WorkingSetElement *carry_elem_set = elem_set; // i put it in carry_elem
-					LIST_REMOVE(&(curenv->SecondList),elem_set);   //remove it to space
-					env_page_ws_invalidate(curenv, elem_set->virtual_address);
+					 inSecondList=1;
+					LIST_REMOVE(&(curenv->SecondList),element);   //remove it to space
+					//env_page_ws_invalidate(curenv, elem_set->virtual_address);
 
 					struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
 					LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
 					pt_set_page_permissions(curenv->env_page_directory,elem_Move->virtual_address,0,PERM_PRESENT);
 
-					LIST_INSERT_HEAD(&(curenv->ActiveList),carry_elem_set);
-					pt_set_page_permissions(curenv->env_page_directory,carry_elem_set->virtual_address,PERM_PRESENT,0);
+					LIST_INSERT_HEAD(&(curenv->ActiveList),element);
+					pt_set_page_permissions(curenv->env_page_directory,element->virtual_address,PERM_PRESENT,0);
 
-					if(c)
-						break;
+					break;
 				}
 			}
 
-			if(c==0){
+			if(!inSecondList)
+			{
+			struct WorkingSetElement *newElement= env_page_ws_list_create_element(curenv, fault_va);
 
 			struct WorkingSetElement *victim_Remove = LIST_LAST(&(curenv->SecondList));
+			struct FrameInfo *frame= get_frame_info(curenv->env_page_directory,(uint32)victim_Remove, &ptr_table);
+
 			//check if modified => write it to disk
-			uint32 page_permissions = pt_get_page_permissions(curenv->env_page_directory,(uint32)victim_Remove->virtual_address);
+			uint32 page_permissions = pt_get_page_permissions(curenv->env_page_directory,victim_Remove->virtual_address);
 			if(page_permissions & PERM_MODIFIED)
 			{
 			  //write it to disk(update)
 				uint32 *ptr_table = NULL;
-				struct FrameInfo *victim_Remove_iNFO = get_frame_info(curenv->env_page_directory, (uint32)victim_Remove->virtual_address , &ptr_table);
-				pf_update_env_page(curenv, (uint32)victim_Remove->virtual_address, victim_Remove_iNFO);
+				pf_update_env_page(curenv, (uint32)victim_Remove->virtual_address, frame);
+			}
 
-			LIST_REMOVE(&(curenv->SecondList),victim_Remove);
-			env_page_ws_invalidate(curenv, victim_Remove->virtual_address);
-			 }
-			 else
-			 {
-	     	 LIST_REMOVE(&(curenv->SecondList),victim_Remove);
+	     	LIST_REMOVE(&(curenv->SecondList),victim_Remove);
+			map_frame(curenv->env_page_directory,frame,fault_va,PERM_AVAILABLE | PERM_PRESENT|PERM_USER|PERM_WRITEABLE);
+
 	     	env_page_ws_invalidate(curenv, victim_Remove->virtual_address);
-			 }
+
+
+
 			struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
+	     	 LIST_REMOVE(&(curenv->ActiveList),elem_Move);
+
 			LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
 			//PDX (elem_Move->virtual_address) in case using curenv is false replace it with that .
 			pt_set_page_permissions(curenv->env_page_directory,elem_Move->virtual_address,0,PERM_PRESENT);
 
-			LIST_INSERT_HEAD(&(curenv->ActiveList),elem_set);
+			LIST_INSERT_HEAD(&(curenv->ActiveList),newElement);
 			pt_set_page_permissions(curenv->env_page_directory,fault_va,PERM_PRESENT,0);
 
 
