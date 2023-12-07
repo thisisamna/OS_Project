@@ -166,7 +166,7 @@ void sched_init_BSD(uint8 numOfLevels, uint8 quantum)
 	//Comment the following line
 
 	num_of_ready_queues = numOfLevels;
-	struct Env_Queue *env_ready_queues [numOfLevels];
+	struct Env_Queue *env_ready_queues;
 	env_ready_queues = kmalloc(num_of_ready_queues * sizeof(struct Env_Queue));
 	// i was going to call queueinit but i'm not really sure
 	quantums = kmalloc(num_of_ready_queues * sizeof(uint8)) ;
