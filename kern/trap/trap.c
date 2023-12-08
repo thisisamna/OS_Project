@@ -389,20 +389,22 @@ void fault_handler(struct Trapframe *tf)
 			perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
 			if(perms & PERM_PRESENT)
 			{
-
+				cprintf("present\n");
 				sched_kill_env(faulted_env->env_id);
 			}
 			//CHECK IF IT IS POINTING TO KERNEL
 			else if(fault_va>USER_LIMIT)
 			{
+				cprintf("user\n");
 				sched_kill_env(faulted_env->env_id);
 			}
 			//CHECK IF IT IS POINTING TO UNMARKED PAGE
 			else if(fault_va>=USER_HEAP_START&&fault_va<USER_HEAP_MAX)
 			{
-				//if it is marked
+				//if it is unmarked
 				if(!(perms & PERM_AVAILABLE))
 				{
+					cprintf("unmarked\n");
 					sched_kill_env(faulted_env->env_id);
 				}
 

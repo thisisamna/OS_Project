@@ -82,7 +82,9 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 		int iWS =curenv->page_last_WS_index;
 		uint32 wsSize = env_page_ws_get_size(curenv);
 #endif
+
 		fault_va=ROUNDDOWN(fault_va,PAGE_SIZE);
+
 	if(isPageReplacmentAlgorithmFIFO())
 	{
 		uint32 *ptr_table = NULL;
@@ -146,28 +148,50 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 
 			struct WorkingSetElement *victim = LIST_FIRST(&(curenv->page_WS_list));
 
-			struct FrameInfo *ptr_frame_info= get_frame_info(curenv->env_page_directory,(uint32)victim, &ptr_table);
+			struct FrameInfo *victimFrameInfo = get_frame_info(curenv->env_page_directory, (uint32)victim->virtual_address , &ptr_table);
+			map_frame(curenv->env_page_directory,victimFrameInfo,fault_va,PERM_AVAILABLE | PERM_PRESENT|PERM_USER|PERM_WRITEABLE);
 
 
 			uint32 page_permissions = pt_get_page_permissions(curenv->env_page_directory,(uint32)victim->virtual_address);
 			 if(page_permissions & PERM_MODIFIED)
 			 {
+
 				//save it to the page file
-				struct FrameInfo *victimFrameInfo = get_frame_info(curenv->env_page_directory, (uint32)victim->virtual_address , &ptr_table);
-				pf_update_env_page(curenv, victim->virtual_address,ptr_frame_info);
-				LIST_REMOVE(&(curenv->page_WS_list),victim);
+				pf_update_env_page(curenv, victim->virtual_address,victimFrameInfo);
+
+				//LIST_REMOVE(&(curenv->page_WS_list),victim);
 				env_page_ws_invalidate(curenv, victim->virtual_address);
+				//pt_set_page_permissions(curenv->env_page_directory,victim->virtual_address,0,PERM_AVAILABLE);
+
 
 			 }
 			else
 			{
-			LIST_REMOVE(&(curenv->page_WS_list),victim);
+			//LIST_REMOVE(&(curenv->page_WS_list),victim);
 			env_page_ws_invalidate(curenv, victim->virtual_address);
+			//pt_set_page_permissions(curenv->env_page_directory,victim->virtual_address,0,PERM_AVAILABLE);
 			}
-			map_frame(curenv->env_page_directory,ptr_frame_info,fault_va,PERM_AVAILABLE | PERM_PRESENT|PERM_USER|PERM_WRITEABLE);
+			 int ret = pf_read_env_page(curenv,va);
+
+			 			if (ret == E_PAGE_NOT_EXIST_IN_PF)
+			 			{
+			 				//cprintf("Not in page file\n");
+
+			 				if ((fault_va >= USER_HEAP_START && fault_va < USER_HEAP_MAX) || (fault_va >= USTACKBOTTOM && fault_va < USTACKTOP))
+			 				{
+			 				}
+			 				else
+			 				{
+
+			 					cprintf("fifo kill\n");
+			 					sched_kill_env(curenv->env_id);
+			 					return;
+			 				}
+			 			}
 			struct WorkingSetElement *newElement= env_page_ws_list_create_element(curenv, fault_va);
 			LIST_INSERT_TAIL(&(curenv->page_WS_list), newElement);
-
+			//curenv->page_last_WS_element = LIST_FIRST(&(curenv->page_WS_list));
+			curenv->page_last_WS_element =newElement;
 
 
 
@@ -176,6 +200,7 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 	}
 	if(isPageReplacmentAlgorithmLRU(PG_REP_LRU_LISTS_APPROX))
 	{
+
 		uint32 *ptr_table = NULL;
 		 struct WorkingSetElement *element;
 
@@ -309,3 +334,4 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 		 {
 		 	panic("this function is not required...!!");
 		 }
+
