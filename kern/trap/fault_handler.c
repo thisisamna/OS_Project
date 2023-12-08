@@ -82,7 +82,6 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 		int iWS =curenv->page_last_WS_index;
 		uint32 wsSize = env_page_ws_get_size(curenv);
 #endif
-cprintf("Fault va: %x \n", fault_va);
 	if(isPageReplacmentAlgorithmFIFO())
 	{
 		if(wsSize < (curenv->page_WS_max_size))
@@ -178,18 +177,20 @@ cprintf("Fault va: %x \n", fault_va);
 	}
 	if(isPageReplacmentAlgorithmLRU(PG_REP_LRU_LISTS_APPROX))
 	{
+		cprintf("Fault va: %x \n", fault_va);
+
 		//TODO: [PROJECT'23.MS3 - #2] [1] PAGE FAULT HANDLER - LRU Replacement
 		// Write your code here, remove the panic and write your code
 		//panic("page_fault_handler() LRU Replacement is not implemented yet...!!");
 
 
+
+
+			//TODO: [PROJECT'23.MS3 - BONUS] [1] PAGE FAULT HANDLER - O(1) implementation of LRU replacement
 	}
 }
 
-void __page_fault_handler_with_buffering(struct Env * curenv, uint32 fault_va)
-{
+ void __page_fault_handler_with_buffering(struct Env * curenv, uint32 fault_va)
+ {
 	panic("this function is not required...!!");
-}
-
-
-
+ }
