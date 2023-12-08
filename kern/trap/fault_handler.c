@@ -82,6 +82,7 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 		int iWS =curenv->page_last_WS_index;
 		uint32 wsSize = env_page_ws_get_size(curenv);
 #endif
+		fault_va=ROUNDDOWN(fault_va,PAGE_SIZE);
 	if(isPageReplacmentAlgorithmFIFO())
 	{
 		uint32 *ptr_table = NULL;
@@ -236,36 +237,32 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 			 cprintf("1\n");
 			int inSecondList=0;
 			element=NULL;
-			 struct WorkingSetElement *newElement=NULL;
 			LIST_FOREACH(element, &(curenv->SecondList))
 			{
+				 cprintf("%Adress in loop: %x\n", element->virtual_address);
+
 				if(element->virtual_address==fault_va)
 				{
 					inSecondList=1;
-					newElement=element;
+					 LIST_REMOVE(&(curenv->SecondList),element);   //remove it to space
+					//env_page_ws_invalidate(curenv, elem_set->virtual_address);
 
-				}
-				 cprintf("%Adress in loop: %x\n", element->virtual_address);
+					struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
+					LIST_REMOVE(&(curenv->ActiveList), elem_Move);
+					LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
+					pt_set_page_permissions(curenv->env_page_directory,elem_Move->virtual_address,0,PERM_PRESENT);
 
-				if(inSecondList)
+					LIST_INSERT_HEAD(&(curenv->ActiveList),element);
+					pt_set_page_permissions(curenv->env_page_directory,fault_va,PERM_PRESENT,0);
+
+
+
 					break;
+				}
 
 			}
 			 cprintf("2\n");
-			 if(inSecondList)
-			 {
-				 LIST_REMOVE(&(curenv->SecondList),newElement);   //remove it to space
-				//env_page_ws_invalidate(curenv, elem_set->virtual_address);
-
-				struct WorkingSetElement *elem_Move = LIST_LAST(&(curenv->ActiveList));
-				LIST_INSERT_HEAD(&(curenv->SecondList), elem_Move);
-				pt_set_page_permissions(curenv->env_page_directory,elem_Move->virtual_address,0,PERM_PRESENT);
-
-				LIST_INSERT_HEAD(&(curenv->ActiveList),newElement);
-				pt_set_page_permissions(curenv->env_page_directory,fault_va,PERM_PRESENT,0);
-
-			 }
-			 else if(!inSecondList)
+			 if(!inSecondList)
 			{
 				 cprintf("HERE\n");
 
