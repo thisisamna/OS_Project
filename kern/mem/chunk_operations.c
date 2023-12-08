@@ -169,8 +169,7 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 			ptr_page_table = create_page_table(e->env_page_directory, va);
 
 		int perms = pt_get_page_permissions(e->env_page_directory,va);
-		if(perms & PERM_AVAILABLE)
-		{
+
 			//unmark it
 			pt_set_page_permissions(e->env_page_directory,va,0,PERM_AVAILABLE);
 			//unmap it
@@ -179,15 +178,15 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 				unmap_frame(e->env_page_directory,va);/*Question*/ //passing ptr_page_directory?
 			}
 			//if page is in page file
-			int ret = pf_read_env_page(e, (void*)va);
-			if (ret != E_PAGE_NOT_EXIST_IN_PF)
+			int ret2 = pf_read_env_page(e, (void*)va);
+			if (ret2 != E_PAGE_NOT_EXIST_IN_PF)
 				pf_remove_env_page(e,va);
 			//if page is in working list
 			env_page_ws_invalidate(e,va); //Free ONLY pages that are resident in the working set from the memor
 
 
 			++index; //not used
-		}
+
 		va += PAGE_SIZE;
 	}
 		return;
