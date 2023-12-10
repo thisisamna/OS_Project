@@ -291,9 +291,6 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 
 					LIST_INSERT_HEAD(&(curenv->ActiveList),element);
 					pt_set_page_permissions(curenv->env_page_directory,fault_va,PERM_PRESENT,0);
-
-
-
 					break;
 				}
 
@@ -316,7 +313,6 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 				pf_update_env_page(curenv, (uint32)victim_Remove->virtual_address, frame);
 			}
 
-	     	LIST_REMOVE(&(curenv->SecondList),victim_Remove);
 			map_frame(curenv->env_page_directory,frame,fault_va,PERM_AVAILABLE | PERM_PRESENT|PERM_USER|PERM_WRITEABLE);
 
 	     	env_page_ws_invalidate(curenv, victim_Remove->virtual_address);
