@@ -180,16 +180,28 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 							}
 						}
 
-				LIST_INSERT_BEFORE(&(curenv->page_WS_list), next, newElement);
+				//LIST_INSERT_BEFORE(&(curenv->page_WS_list), next, newElement);
 
 
 				LIST_REMOVE(&(curenv->page_WS_list), victim);
+				LIST_INSERT_TAIL(&(curenv->page_WS_list), newElement);
 
-				curenv->page_last_WS_element=newElement->prev_next_info.le_next;
-				if(curenv->page_last_WS_element==LIST_LAST(&curenv->page_WS_list))
+				if (LIST_SIZE(&(curenv->page_WS_list)) == curenv->page_WS_max_size)
 				{
-					curenv->page_last_WS_element=LIST_FIRST(&curenv->page_WS_list);
+					//cprintf("FULL WORKING SET\n");
+					curenv->page_last_WS_element = LIST_FIRST(&(curenv->page_WS_list));
+					//env_page_ws_print(curenv);
+
 				}
+				else
+				{
+					curenv->page_last_WS_element = NULL;
+				}
+//				curenv->page_last_WS_element=newElement->prev_next_info.le_next;
+//				if(curenv->page_last_WS_element==LIST_LAST(&curenv->page_WS_list))
+//				{
+//					curenv->page_last_WS_element=LIST_FIRST(&curenv->page_WS_list);
+//				}
 
 
 
