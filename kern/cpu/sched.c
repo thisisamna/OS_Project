@@ -233,7 +233,6 @@ void clock_interrupt_handler()
 			for(int i=0;i<num_of_ready_queues;i++)
 			{
 				num_of_ready_processes+= queue_size(&(env_ready_queues[i]));
-
 			}
 			if(curenv!=NULL)
 				num_of_ready_processes++;
@@ -249,12 +248,6 @@ void clock_interrupt_handler()
 					coefficient = fix_div(fix_scale(load_avg,2), fix_add(fix_scale(load_avg,2), fix_int(1)));
 					env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
 				}
-			}
-			//new processes
-			LIST_FOREACH(env, &env_new_queue)
-			{
-				coefficient = fix_div(fix_scale(load_avg,2), fix_add(fix_scale(load_avg,2), fix_int(1)));
-				env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
 			}
 
 		}
