@@ -169,7 +169,10 @@ void sched_init_BSD(uint8 numOfLevels, uint8 quantum)
 	struct Env_Queue *env_ready_queues;
 	env_ready_queues = kmalloc(num_of_ready_queues * sizeof(struct Env_Queue));
 	// i was going to call queueinit but i'm not really sure
-	quantums = kmalloc(num_of_ready_queues * sizeof(uint8)) ;
+	quantums = kmalloc(sizeof(uint8)) ;
+	quantums[0]=quantum;
+	ticksPerSecond= 1000/quantums[0];
+
 	for (int i=0;i<num_of_ready_queues;i++)
 	{
 		init_queue(&(env_ready_queues[i]));
@@ -223,10 +226,11 @@ void clock_interrupt_handler()
 {
 	//TODO: [PROJECT'23.MS3 - #5] [2] BSD SCHEDULER - Your code is here
 	{
+
 		fixed_point_t coefficient;
 		struct Env* env;
 		curenv->recent_cpu = fix_add(curenv->recent_cpu,fix_int(1));
-		if((ticks*quantums[0])%1000==0)//second has passed
+		if(ticks%ticksPerSecond==0)//second has passed
 		{
 			//count ready processes.. optimizable?
 			uint32 num_of_ready_processes =0;
