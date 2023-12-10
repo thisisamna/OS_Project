@@ -83,6 +83,7 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 		uint32 wsSize = env_page_ws_get_size(curenv);
 #endif
 		fault_va=ROUNDDOWN(fault_va,PAGE_SIZE);
+
 	if(isPageReplacmentAlgorithmFIFO())
 	{
 		uint32 *ptr_table = NULL;
@@ -134,46 +135,70 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 			//refer to the project presentation and documentation for details
 
 		}
-		else
-		{
-		//TODO: [PROJECT'23.MS3 - #1] [1] PAGE FAULT HANDLER - FIFO Replacement
-		// Write your code here, remove the panic and write your cod
+		else   //// FIFO Replacement
+			{
+			//TODO: [PROJECT'23.MS3 - #1] [1] PAGE FAULT HANDLER - FIFO Replacement
+			// Write your code here, remove the panic and write your cod
 
 		//panic("page_fault_handler() FIFO Replacement is not implemented yet...!!");
 			//cprintf("REPLACEMENT=========================WS Size = %d\n", wsSize );
 			//refer to the project presentation and documentation for details
 			void* va= (void*)fault_va;
 
-			struct WorkingSetElement *victim = LIST_FIRST(&(curenv->page_WS_list));
 
-			struct FrameInfo *ptr_frame_info= get_frame_info(curenv->env_page_directory,(uint32)victim, &ptr_table);
+				struct WorkingSetElement *victim = curenv->page_last_WS_element;
+				struct WorkingSetElement *next = curenv->page_last_WS_element->prev_next_info.le_next;
+
+				uint32 *ptr_table=NULL;
+				struct FrameInfo *newframe = get_frame_info(curenv->env_page_directory , victim->virtual_address ,&ptr_table);
+				map_frame(curenv->env_page_directory,newframe,fault_va, PERM_AVAILABLE| PERM_PRESENT|PERM_USER|PERM_WRITEABLE);
 
 
-			uint32 page_permissions = pt_get_page_permissions(curenv->env_page_directory,(uint32)victim->virtual_address);
-			 if(page_permissions & PERM_MODIFIED)
-			 {
-				//save it to the page file
-				struct FrameInfo *victimFrameInfo = get_frame_info(curenv->env_page_directory, (uint32)victim->virtual_address , &ptr_table);
-				pf_update_env_page(curenv, victim->virtual_address,ptr_frame_info);
-				LIST_REMOVE(&(curenv->page_WS_list),victim);
-				env_page_ws_invalidate(curenv, victim->virtual_address);
+				uint32 page_permissions = pt_get_page_permissions(curenv->env_page_directory,(uint32)victim->virtual_address);
+				 if(page_permissions & PERM_MODIFIED)
+				 {
+					uint32 *ptr_table=NULL;
+					struct FrameInfo *victimFrameInfo = get_frame_info(curenv->env_page_directory, (uint32)victim->virtual_address , &ptr_table);
+					pf_update_env_page(curenv, victim->virtual_address,victimFrameInfo);
+				 }
+				unmap_frame(curenv->env_page_directory , victim->virtual_address);
 
-			 }
-			else
-			{
-			LIST_REMOVE(&(curenv->page_WS_list),victim);
-			env_page_ws_invalidate(curenv, victim->virtual_address);
+				struct WorkingSetElement *newElement= env_page_ws_list_create_element(curenv, fault_va);
+				 int ret = pf_read_env_page(curenv,va);
+					if (ret == E_PAGE_NOT_EXIST_IN_PF)
+						{
+							//cprintf("Not in page file\n");
+
+							if ((fault_va >= USER_HEAP_START && fault_va < USER_HEAP_MAX) || (fault_va >= USTACKBOTTOM && fault_va < USTACKTOP))
+							{
+							}
+							else
+							{
+
+								sched_kill_env(curenv->env_id);
+								return;
+							}
+						}
+
+				LIST_INSERT_BEFORE(&(curenv->page_WS_list), next, newElement);
+
+
+				LIST_REMOVE(&(curenv->page_WS_list), victim);
+
+				curenv->page_last_WS_element=newElement->prev_next_info.le_next;
+				if(curenv->page_last_WS_element==LIST_LAST(&curenv->page_WS_list))
+				{
+					curenv->page_last_WS_element=LIST_FIRST(&curenv->page_WS_list);
+				}
+
+
+
+
+
 			}
-			map_frame(curenv->env_page_directory,ptr_frame_info,fault_va,PERM_AVAILABLE | PERM_PRESENT|PERM_USER|PERM_WRITEABLE);
-			struct WorkingSetElement *newElement= env_page_ws_list_create_element(curenv, fault_va);
-			LIST_INSERT_TAIL(&(curenv->page_WS_list), newElement);
-
-
-
 
 
 		}
-	}
 	if(isPageReplacmentAlgorithmLRU(PG_REP_LRU_LISTS_APPROX))
 	{
 		uint32 *ptr_table = NULL;
@@ -309,3 +334,4 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 		 {
 		 	panic("this function is not required...!!");
 		 }
+
