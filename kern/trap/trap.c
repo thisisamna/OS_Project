@@ -417,8 +417,6 @@ void fault_handler(struct Trapframe *tf)
 
 			/*============================================================================================*/
 		}
-		cprintf("Fault va tia: %x", fault_va);
-
 
 		/*2022: Check if fault due to Access Rights */
 		int perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
