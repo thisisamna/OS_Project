@@ -170,8 +170,11 @@ void sched_init_BSD(uint8 numOfLevels, uint8 quantum)
 	env_ready_queues = kmalloc(num_of_ready_queues * sizeof(struct Env_Queue));
 
 	quantums = kmalloc(sizeof(uint8)) ;
-	quantums[0]=quantum;
+	quantums[0] = quantum;
+	kclock_set_quantum(quantums[0]);
+
 	ticksPerSecond= 1000/quantums[0];
+	//load_avg = 0;
 
 	for (int i=0;i<num_of_ready_queues;i++)
 	{
@@ -206,10 +209,13 @@ struct Env* fos_scheduler_BSD()
 	//Comment the following line
 	//panic("Not implemented yet");
 
-		for(int i = 0; i<num_of_ready_queues; i++)
+		for(int i = num_of_ready_queues-1; i>=0; i--)
 		{
 			if(queue_size(&env_ready_queues[i]) > 0)
 			{
+				if(curenv != NULL)
+					enqueue(&env_ready_queues[curenv->priority], curenv);
+
 				return dequeue(&env_ready_queues[i]);
 			}
 		}
@@ -234,9 +240,17 @@ void clock_interrupt_handler()
 		struct Env* env;
 		curenv->recent_cpu = fix_add(curenv->recent_cpu,fix_int(1));
 
-		for(int i = 0; i<num_of_ready_queues; i++)
+		//RUNNING PROCCESSES
+		for(int i=0;i<num_of_ready_queues;i++)
 		{
-			//if it is running
+			LIST_FOREACH(env, &(env_ready_queues[i]))
+			{
+				if(env->env_status == ENV_RUNNABLE)
+				{
+					//Stole it from ammon
+					env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
+				}
+			}
 		}
 
 
@@ -244,16 +258,19 @@ void clock_interrupt_handler()
 		{
 			//count ready processes.. optimizable?
 			uint32 num_of_ready_processes =0;
+			if(curenv!=NULL)
+				num_of_ready_processes++;
+
 			for(int i=0;i<num_of_ready_queues;i++)
 			{
 				num_of_ready_processes+= queue_size(&(env_ready_queues[i]));
 			}
-			if(curenv!=NULL)
-				num_of_ready_processes++;
+
+
 			//calculate load average
 			load_avg=fix_add(fix_scale(fix_unscale(load_avg,60),59),fix_unscale(fix_int(num_of_ready_processes),60));
-			//calculate recent cpu for every process
 
+			//calculate recent cpu for every process
 			//ready processes
 			for(int i=0;i<num_of_ready_queues;i++)
 			{
@@ -261,6 +278,7 @@ void clock_interrupt_handler()
 				{
 					coefficient = fix_div(fix_scale(load_avg,2), fix_add(fix_scale(load_avg,2), fix_int(1)));
 					env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
+
 				}
 			}
 
@@ -282,8 +300,18 @@ void clock_interrupt_handler()
 					else
 						env->priority=priority;
 
+					//REORDERING
+					if(env->priority%i != 0)
+					{
+						remove_from_queue(&(env_ready_queues[i]), env);
+						enqueue(&(env_ready_queues[priority]), env);
+					}
+
 				}
+
 			}
+
+
 
 		}
 
