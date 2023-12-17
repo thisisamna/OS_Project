@@ -245,7 +245,7 @@ void clock_interrupt_handler()
 		if(curenv != NULL)
 		{
 			//Stole it from ammon
-			curenv->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
+			curenv->recent_cpu=fix_add(fix_mul(coefficient,curenv->recent_cpu),fix_int(curenv->nice));
 		}
 
 
