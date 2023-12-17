@@ -240,17 +240,12 @@ void clock_interrupt_handler()
 		struct Env* env;
 		curenv->recent_cpu = fix_add(curenv->recent_cpu,fix_int(1));
 
-		//RUNNING PROCCESSES
-		for(int i=0;i<num_of_ready_queues;i++)
+		//RUNNING PROCCESS
+
+		if(curenv != NULL)
 		{
-			LIST_FOREACH(env, &(env_ready_queues[i]))
-			{
-				if(env->env_status == ENV_RUNNABLE)
-				{
-					//Stole it from ammon
-					env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
-				}
-			}
+			//Stole it from ammon
+			curenv->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
 		}
 
 
