@@ -166,14 +166,20 @@ void sched_init_BSD(uint8 numOfLevels, uint8 quantum)
 	//Comment the following line
 
 	num_of_ready_queues = numOfLevels;
-	struct Env_Queue *env_ready_queues [numOfLevels];
+	struct Env_Queue *env_ready_queues;
+	env_ready_queues = kmalloc(num_of_ready_queues * sizeof(struct Env_Queue));
 
-	for(int i = 0; i<numOfLevels; i++)
+	quantums = kmalloc(sizeof(uint8)) ;
+	quantums[0] = quantum;
+	kclock_set_quantum(quantums[0]);
+
+	ticksPerSecond= 1000/quantums[0];
+	//load_avg = 0;
+
+	for (int i=0;i<num_of_ready_queues;i++)
 	{
-		env_ready_queues[i] = kmalloc(sizeof(struct Env_Queue));
+		init_queue(&(env_ready_queues[i]));
 	}
-	quantums = kmalloc(num_of_ready_queues * sizeof(uint8)) ;
-
 	//=========================================
 	//DON'T CHANGE THESE LINES=================
 	scheduler_status = SCH_STOPPED;
@@ -202,13 +208,19 @@ struct Env* fos_scheduler_BSD()
 	//Your code is here
 	//Comment the following line
 	//panic("Not implemented yet");
-	for(int i = 0; i <num_of_ready_queues; i++)
-	{
-		if(queue_size(&env_ready_queues[i]) > 0)
+
+		for(int i = num_of_ready_queues-1; i>=0; i--)
 		{
-			return dequeue(&env_ready_queues[i]);
+			if(queue_size(&env_ready_queues[i]) > 0)
+			{
+				if(curenv != NULL)
+					enqueue(&env_ready_queues[curenv->priority], curenv);
+
+				return dequeue(&env_ready_queues[i]);
+			}
 		}
-	}
+
+
 	return NULL;
 }
 
@@ -219,25 +231,46 @@ struct Env* fos_scheduler_BSD()
 void clock_interrupt_handler()
 {
 	//TODO: [PROJECT'23.MS3 - #5] [2] BSD SCHEDULER - Your code is here
+	//4th tick ==> recalculate priority
+	//each sec ==> recalculate load and recent_cpu for All processes
+	//each tick ==> recalculate recent_cpu for RUNNING processes
 	{
+
 		fixed_point_t coefficient;
 		struct Env* env;
 		curenv->recent_cpu = fix_add(curenv->recent_cpu,fix_int(1));
-		if((ticks*quantums[0])%1000==0)//second has passed
+
+		//RUNNING PROCCESSES
+		for(int i=0;i<num_of_ready_queues;i++)
+		{
+			LIST_FOREACH(env, &(env_ready_queues[i]))
+			{
+				if(env->env_status == ENV_RUNNABLE)
+				{
+					//Stole it from ammon
+					env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
+				}
+			}
+		}
+
+
+		if(timer_ticks()%ticksPerSecond==0)//second has passed
 		{
 			//count ready processes.. optimizable?
 			uint32 num_of_ready_processes =0;
+			if(curenv!=NULL)
+				num_of_ready_processes++;
+
 			for(int i=0;i<num_of_ready_queues;i++)
 			{
 				num_of_ready_processes+= queue_size(&(env_ready_queues[i]));
-
 			}
-			if(curenv!=NULL)
-				num_of_ready_processes++;
+
+
 			//calculate load average
 			load_avg=fix_add(fix_scale(fix_unscale(load_avg,60),59),fix_unscale(fix_int(num_of_ready_processes),60));
-			//calculate recent cpu for every process
 
+			//calculate recent cpu for every process
 			//ready processes
 			for(int i=0;i<num_of_ready_queues;i++)
 			{
@@ -245,27 +278,40 @@ void clock_interrupt_handler()
 				{
 					coefficient = fix_div(fix_scale(load_avg,2), fix_add(fix_scale(load_avg,2), fix_int(1)));
 					env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
+
 				}
-			}
-			//new processes
-			LIST_FOREACH(env, &env_new_queue)
-			{
-				coefficient = fix_div(fix_scale(load_avg,2), fix_add(fix_scale(load_avg,2), fix_int(1)));
-				env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
 			}
 
 		}
-		if(ticks%4==0)
+		if(timer_ticks()%4==0) //4th tick
 		{
+			uint32 priority;
 			//recalculate priority and reorder queues
 			//loop on all envs
 			for(int i=0;i<num_of_ready_queues;i++)
 			{
 				LIST_FOREACH(env, &(env_ready_queues[i]))
 				{
-					env->priority=PRI_MAX-fix_trunc(fix_unscale(env->recent_cpu,4))-(env->nice*2);
+					priority=PRI_MAX-fix_trunc(fix_unscale(env->recent_cpu,4))-(env->nice*2);
+					if(priority>=PRI_MAX)
+						env->priority=PRI_MAX;
+					else if(priority<=PRI_MIN)
+						env->priority=PRI_MIN;
+					else
+						env->priority=priority;
+
+					//REORDERING
+					if(env->priority%i != 0)
+					{
+						remove_from_queue(&(env_ready_queues[i]), env);
+						enqueue(&(env_ready_queues[priority]), env);
+					}
+
 				}
+
 			}
+
+
 
 		}
 
