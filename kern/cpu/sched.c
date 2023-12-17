@@ -215,12 +215,12 @@ struct Env* fos_scheduler_BSD()
 			{
 				if(curenv != NULL)
 					enqueue(&env_ready_queues[curenv->priority], curenv);
-
+				kclock_set_quantum(quantums[0]);
 				return dequeue(&env_ready_queues[i]);
 			}
 		}
 
-
+//load_avg hereeee
 	return NULL;
 }
 
