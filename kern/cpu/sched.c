@@ -173,7 +173,7 @@ void sched_init_BSD(uint8 numOfLevels, uint8 quantum)
 	quantums[0] = quantum;
 	kclock_set_quantum(quantums[0]);
 
-	ticksPerSecond= 1000/quantums[0];
+	ticksPerSecond= 1000/quantums[0]; //rounds down
 	//load_avg = 0;
 
 	for (int i=0;i<num_of_ready_queues;i++)
@@ -296,7 +296,7 @@ void clock_interrupt_handler()
 						env->priority=priority;
 
 					//REORDERING
-					if(env->priority%i != 0)
+					if(env->priority != i)
 					{
 						remove_from_queue(&(env_ready_queues[i]), env);
 						enqueue(&(env_ready_queues[priority]), env);
