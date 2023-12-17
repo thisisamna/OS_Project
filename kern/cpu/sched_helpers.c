@@ -558,7 +558,7 @@ void env_set_nice(struct Env* e, int nice_value)
 	//Comment the following line
 	//panic("Not implemented yet");
 	e->nice=nice_value;
-	e->priority=PRI_MAX-fix_trunc(fix_unscale(e->recent_cpu,4))-(e->nice*2);
+	e->priority=num_of_ready_queues-fix_trunc(fix_unscale(e->recent_cpu,4))-(e->nice*2);
 
 
 }

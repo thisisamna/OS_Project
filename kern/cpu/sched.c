@@ -292,9 +292,9 @@ void clock_interrupt_handler()
 			{
 				LIST_FOREACH(env, &(env_ready_queues[i]))
 				{
-					priority=PRI_MAX-fix_trunc(fix_unscale(env->recent_cpu,4))-(env->nice*2);
-					if(priority>=PRI_MAX)
-						env->priority=PRI_MAX;
+					priority=num_of_ready_queues-fix_trunc(fix_unscale(env->recent_cpu,4))-(env->nice*2);
+					if(priority>=num_of_ready_queues)
+						env->priority=num_of_ready_queues;
 					else if(priority<=PRI_MIN)
 						env->priority=PRI_MIN;
 					else
@@ -306,6 +306,7 @@ void clock_interrupt_handler()
 						remove_from_queue(&(env_ready_queues[i]), env);
 						enqueue(&(env_ready_queues[priority]), env);
 					}
+
 
 				}
 
