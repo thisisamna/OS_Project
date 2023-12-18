@@ -248,8 +248,8 @@ void clock_interrupt_handler()
 			curenv->recent_cpu=fix_add(fix_mul(coefficient,curenv->recent_cpu),fix_int(curenv->nice));
 		}
 
-
-		if(timer_ticks()%ticksPerSecond==0)//second has passed
+		//timer_ticks()%ticksPerSecond==0
+		if(1)//second has passed
 		{
 			//count ready processes.. optimizable?
 			uint32 num_of_ready_processes =0;
