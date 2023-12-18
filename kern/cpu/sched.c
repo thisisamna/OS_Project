@@ -126,6 +126,7 @@ void sched_init_RR(uint8 quantum)
 	kclock_set_quantum(quantums[0]);
 	init_queue(&(env_ready_queues[0]));
 
+
 	//=========================================
 	//DON'T CHANGE THESE LINES=================
 	scheduler_status = SCH_STOPPED;
@@ -241,20 +242,15 @@ void clock_interrupt_handler()
 		curenv->recent_cpu = fix_add(curenv->recent_cpu,fix_int(1));
 
 		//RUNNING PROCCESSES
-		for(int i=0;i<num_of_ready_queues;i++)
+		if(curenv->env_status == ENV_RUNNABLE)
 		{
-			LIST_FOREACH(env, &(env_ready_queues[i]))
-			{
-				if(env->env_status == ENV_RUNNABLE)
-				{
-					//Stole it from ammon
-					env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
-				}
-			}
+			//Stole it from ammon
+			curenv->recent_cpu=fix_add(fix_mul(coefficient,curenv->recent_cpu),fix_int(curenv->nice));
 		}
 
 
-		if(timer_ticks()%ticksPerSecond==0)//second has passed
+		//timer_ticks()%ticksPerSecond==0
+		if(1)//second has passed
 		{
 			//count ready processes.. optimizable?
 			uint32 num_of_ready_processes =0;
@@ -265,7 +261,6 @@ void clock_interrupt_handler()
 			{
 				num_of_ready_processes+= queue_size(&(env_ready_queues[i]));
 			}
-
 
 			//calculate load average
 			load_avg=fix_add(fix_scale(fix_unscale(load_avg,60),59),fix_unscale(fix_int(num_of_ready_processes),60));
@@ -283,6 +278,7 @@ void clock_interrupt_handler()
 			}
 
 		}
+
 		if(timer_ticks()%4==0) //4th tick
 		{
 			uint32 priority;
@@ -306,14 +302,17 @@ void clock_interrupt_handler()
 						remove_from_queue(&(env_ready_queues[i]), env);
 						enqueue(&(env_ready_queues[priority]), env);
 					}
-
 				}
-
 			}
-
-
-
 		}
+
+
+
+
+
+
+
+
 
 
 	}
