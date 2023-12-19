@@ -208,19 +208,29 @@ struct Env* fos_scheduler_BSD()
 	//Your code is here
 	//Comment the following line
 	//panic("Not implemented yet");
-
+	uint32 num_of_ready_processes = 0;
 		for(int i = num_of_ready_queues-1; i>=0; i--)
 		{
 			if(queue_size(&env_ready_queues[i]) > 0)
 			{
 				if(curenv != NULL)
+				{
+					num_of_ready_processes++;
 					enqueue(&env_ready_queues[curenv->priority], curenv);
+				}
 				kclock_set_quantum(quantums[0]);
 				return dequeue(&env_ready_queues[i]);
 			}
 		}
 
-//load_avg hereeee
+
+
+	for(int i=0;i<num_of_ready_queues;i++)
+	{
+		num_of_ready_processes+= queue_size(&(env_ready_queues[i]));
+	}
+
+	load_avg=fix_add(fix_scale(fix_unscale(load_avg,60),59),fix_unscale(fix_int(num_of_ready_processes),60));
 	return NULL;
 }
 
@@ -236,83 +246,80 @@ void clock_interrupt_handler()
 	//each tick ==> recalculate recent_cpu for RUNNING processes
 	{
 
-		fixed_point_t coefficient;
-		struct Env* env;
-		curenv->recent_cpu = fix_add(curenv->recent_cpu,fix_int(1));
+			fixed_point_t coefficient;
+			struct Env* env;
+			//curenv->recent_cpu = fix_add(curenv->recent_cpu,fix_int(1));
 
-		//RUNNING PROCCESS
-
-		if(curenv != NULL)
-		{
-			//Stole it from ammon
-			curenv->recent_cpu=fix_add(fix_mul(coefficient,curenv->recent_cpu),fix_int(curenv->nice));
-		}
-
-		//timer_ticks()%ticksPerSecond==0
-		if(1)//second has passed
-		{
-			//count ready processes.. optimizable?
-			uint32 num_of_ready_processes =0;
-			if(curenv!=NULL)
-				num_of_ready_processes++;
-
-			for(int i=0;i<num_of_ready_queues;i++)
+			//RUNNING PROCCESS
+			if(curenv != NULL)
 			{
-				num_of_ready_processes+= queue_size(&(env_ready_queues[i]));
+				//Stole it from ammon
+				curenv->recent_cpu=fix_add(fix_mul(coefficient,curenv->recent_cpu),fix_int(curenv->nice));
 			}
 
 
-			//calculate load average
-			load_avg=fix_add(fix_scale(fix_unscale(load_avg,60),59),fix_unscale(fix_int(num_of_ready_processes),60));
 
-			//calculate recent cpu for every process
-			//ready processes
-			for(int i=0;i<num_of_ready_queues;i++)
+//			if(1)//second has passed
+//			{
+//				//count ready processes.. optimizable?
+//				uint32 num_of_ready_processes = 0;
+//				if(curenv!=NULL)
+//					num_of_ready_processes++;
+//
+//				for(int i=0;i<num_of_ready_queues;i++)
+//				{
+//					num_of_ready_processes+= queue_size(&(env_ready_queues[i]));
+//				}
+//
+//
+//				//calculate load average
+//				load_avg=fix_add(fix_scale(fix_unscale(load_avg,60),59),fix_unscale(fix_int(num_of_ready_processes),60));
+//
+//				//calculate recent cpu for every process
+//				//ready processes
+//				for(int i=0;i<num_of_ready_queues;i++)
+//				{
+//					LIST_FOREACH(env, &(env_ready_queues[i]))
+//					{
+//						coefficient = fix_div(fix_scale(load_avg,2), fix_add(fix_scale(load_avg,2), fix_int(1)));
+//						env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
+//
+//					}
+//				}
+//
+//			}
+
+			if(timer_ticks()%4==0) //4th tick
 			{
-				LIST_FOREACH(env, &(env_ready_queues[i]))
+				uint32 priority;
+				//recalculate priority and reorder queues
+				//loop on all envs
+				for(int i=0;i<num_of_ready_queues;i++)
 				{
-					coefficient = fix_div(fix_scale(load_avg,2), fix_add(fix_scale(load_avg,2), fix_int(1)));
-					env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
-
-				}
-			}
-
-		}
-		if(timer_ticks()%4==0) //4th tick
-		{
-			uint32 priority;
-			//recalculate priority and reorder queues
-			//loop on all envs
-			for(int i=0;i<num_of_ready_queues;i++)
-			{
-				LIST_FOREACH(env, &(env_ready_queues[i]))
-				{
-					priority=num_of_ready_queues-fix_trunc(fix_unscale(env->recent_cpu,4))-(env->nice*2);
-					if(priority>=num_of_ready_queues)
-						env->priority=num_of_ready_queues;
-					else if(priority<=PRI_MIN)
-						env->priority=PRI_MIN;
-					else
-						env->priority=priority;
-
-					//REORDERING
-					if(env->priority != i)
+					LIST_FOREACH(env, &(env_ready_queues[i]))
 					{
-						remove_from_queue(&(env_ready_queues[i]), env);
-						enqueue(&(env_ready_queues[priority]), env);
+						priority=num_of_ready_queues-fix_trunc(fix_unscale(env->recent_cpu,4))-(env->nice*2);
+						if(priority>=num_of_ready_queues)
+							env->priority=num_of_ready_queues;
+						else if(priority<=PRI_MIN)
+							env->priority=PRI_MIN;
+						else
+							env->priority=priority;
+
+						//REORDERING
+						if(env->priority != i)
+						{
+							remove_from_queue(&(env_ready_queues[i]), env);
+							enqueue(&(env_ready_queues[priority]), env);
+						}
 					}
-
-
 				}
-
 			}
 
 
-
-		}
-
-
-	}
+//
+//
+}
 
 
 	/********DON'T CHANGE THIS LINE***********/
