@@ -291,32 +291,32 @@ void clock_interrupt_handler()
 //
 //			}
 
-//			if(timer_ticks()%4==0) //4th tick
-//			{
-//				uint32 priority;
-//				//recalculate priority and reorder queues
-//				//loop on all envs
-//				for(int i=0;i<num_of_ready_queues;i++)
-//				{
-//					LIST_FOREACH(env, &(env_ready_queues[i]))
-//					{
-//						priority=num_of_ready_queues-fix_trunc(fix_unscale(env->recent_cpu,4))-(env->nice*2);
-//						if(priority>=num_of_ready_queues)
-//							env->priority=num_of_ready_queues;
-//						else if(priority<=PRI_MIN)
-//							env->priority=PRI_MIN;
-//						else
-//							env->priority=priority;
-//
-//						//REORDERING
-//						if(env->priority != i)
-//						{
-//							remove_from_queue(&(env_ready_queues[i]), env);
-//							enqueue(&(env_ready_queues[priority]), env);
-//						}
-//					}
-//				}
-//			}
+			if(timer_ticks()%4==0) //4th tick
+			{
+				uint32 priority;
+				//recalculate priority and reorder queues
+				//loop on all envs
+				for(int i=0;i<num_of_ready_queues;i++)
+				{
+					LIST_FOREACH(env, &(env_ready_queues[i]))
+					{
+						priority=num_of_ready_queues-fix_trunc(fix_unscale(env->recent_cpu,4))-(env->nice*2);
+						if(priority>=num_of_ready_queues)
+							env->priority=num_of_ready_queues;
+						else if(priority<=PRI_MIN)
+							env->priority=PRI_MIN;
+						else
+							env->priority=priority;
+
+						//REORDERING
+						if(env->priority != i)
+						{
+							remove_from_queue(&(env_ready_queues[i]), env);
+							enqueue(&(env_ready_queues[priority]), env);
+						}
+					}
+				}
+			}
 
 
 //

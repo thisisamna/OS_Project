@@ -13,7 +13,6 @@ _main(void)
 	i1 = strtol(buff1, NULL, 10);
 
 	int res = factorial(i1) ;
-
 	atomic_cprintf("Factorial %d = %d\n",i1, res);
 	return;
 }
