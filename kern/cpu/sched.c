@@ -164,7 +164,7 @@ void sched_init_BSD(uint8 numOfLevels, uint8 quantum)
 	//TODO: [PROJECT'23.MS3 - #4] [2] BSD SCHEDULER - sched_init_BSD
 	//Your code is here
 	//Comment the following line
-
+	sched_delete_ready_queues();
 	num_of_ready_queues = numOfLevels;
 	struct Env_Queue *env_ready_queues;
 	env_ready_queues = kmalloc(num_of_ready_queues * sizeof(struct Env_Queue));
@@ -209,6 +209,7 @@ struct Env* fos_scheduler_BSD()
 	//Comment the following line
 	//panic("Not implemented yet");
 	uint32 num_of_ready_processes = 0;
+
 		for(int i = num_of_ready_queues-1; i>=0; i--)
 		{
 			if(queue_size(&env_ready_queues[i]) > 0)
@@ -219,6 +220,7 @@ struct Env* fos_scheduler_BSD()
 					enqueue(&env_ready_queues[curenv->priority], curenv);
 				}
 				kclock_set_quantum(quantums[0]);
+				cprintf("called\n");
 				return dequeue(&env_ready_queues[i]);
 			}
 		}
@@ -289,32 +291,32 @@ void clock_interrupt_handler()
 //
 //			}
 
-			if(timer_ticks()%4==0) //4th tick
-			{
-				uint32 priority;
-				//recalculate priority and reorder queues
-				//loop on all envs
-				for(int i=0;i<num_of_ready_queues;i++)
-				{
-					LIST_FOREACH(env, &(env_ready_queues[i]))
-					{
-						priority=num_of_ready_queues-fix_trunc(fix_unscale(env->recent_cpu,4))-(env->nice*2);
-						if(priority>=num_of_ready_queues)
-							env->priority=num_of_ready_queues;
-						else if(priority<=PRI_MIN)
-							env->priority=PRI_MIN;
-						else
-							env->priority=priority;
-
-						//REORDERING
-						if(env->priority != i)
-						{
-							remove_from_queue(&(env_ready_queues[i]), env);
-							enqueue(&(env_ready_queues[priority]), env);
-						}
-					}
-				}
-			}
+//			if(timer_ticks()%4==0) //4th tick
+//			{
+//				uint32 priority;
+//				//recalculate priority and reorder queues
+//				//loop on all envs
+//				for(int i=0;i<num_of_ready_queues;i++)
+//				{
+//					LIST_FOREACH(env, &(env_ready_queues[i]))
+//					{
+//						priority=num_of_ready_queues-fix_trunc(fix_unscale(env->recent_cpu,4))-(env->nice*2);
+//						if(priority>=num_of_ready_queues)
+//							env->priority=num_of_ready_queues;
+//						else if(priority<=PRI_MIN)
+//							env->priority=PRI_MIN;
+//						else
+//							env->priority=priority;
+//
+//						//REORDERING
+//						if(env->priority != i)
+//						{
+//							remove_from_queue(&(env_ready_queues[i]), env);
+//							enqueue(&(env_ready_queues[priority]), env);
+//						}
+//					}
+//				}
+//			}
 
 
 //

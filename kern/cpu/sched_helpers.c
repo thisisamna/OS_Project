@@ -443,6 +443,7 @@ void sched_print_all()
 void sched_run_all()
 {
 	struct Env* ptr_env=NULL;
+
 	LIST_FOREACH(ptr_env, &env_new_queue)
 	{
 		sched_remove_new(ptr_env);
