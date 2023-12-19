@@ -67,7 +67,6 @@ fos_scheduler(void)
 		kclock_set_quantum(quantums[0]);
 		//uint16 cnt0 = kclock_read_cnt0_latch() ;
 		//cprintf("CLOCK INTERRUPT AFTER RESET: Counter0 Value = %d\n", cnt0 );
-
 	}
 	else if (scheduler_method == SCH_MLFQ)
 	{
@@ -209,9 +208,11 @@ struct Env* fos_scheduler_BSD()
 	//Comment the following line
 	//panic("Not implemented yet");
 	uint32 num_of_ready_processes = 0;
+	struct Env * next_env = NULL;
 
 		for(int i = num_of_ready_queues-1; i>=0; i--)
 		{
+			//cprintf("queue: %d \n", i);
 			if(queue_size(&env_ready_queues[i]) > 0)
 			{
 				if(curenv != NULL)
@@ -219,9 +220,10 @@ struct Env* fos_scheduler_BSD()
 					num_of_ready_processes++;
 					enqueue(&env_ready_queues[curenv->priority], curenv);
 				}
+
+				next_env = dequeue(&env_ready_queues[i]);
 				kclock_set_quantum(quantums[0]);
-				cprintf("called\n");
-				return dequeue(&env_ready_queues[i]);
+				break;
 			}
 		}
 
@@ -231,9 +233,8 @@ struct Env* fos_scheduler_BSD()
 	{
 		num_of_ready_processes+= queue_size(&(env_ready_queues[i]));
 	}
-
 	load_avg=fix_add(fix_scale(fix_unscale(load_avg,60),59),fix_unscale(fix_int(num_of_ready_processes),60));
-	return NULL;
+	return next_env;
 }
 
 //========================================
@@ -260,36 +261,36 @@ void clock_interrupt_handler()
 			}
 
 
+//(timer_ticks()*quantums[0])% 1000 == 0
+			if((timer_ticks()*quantums[0])% 1000 == 0)//second has passed
+			{
+				//count ready processes.. optimizable?
+				uint32 num_of_ready_processes = 0;
+				if(curenv!=NULL)
+					num_of_ready_processes++;
 
-//			if(1)//second has passed
-//			{
-//				//count ready processes.. optimizable?
-//				uint32 num_of_ready_processes = 0;
-//				if(curenv!=NULL)
-//					num_of_ready_processes++;
-//
-//				for(int i=0;i<num_of_ready_queues;i++)
-//				{
-//					num_of_ready_processes+= queue_size(&(env_ready_queues[i]));
-//				}
-//
-//
-//				//calculate load average
-//				load_avg=fix_add(fix_scale(fix_unscale(load_avg,60),59),fix_unscale(fix_int(num_of_ready_processes),60));
-//
-//				//calculate recent cpu for every process
-//				//ready processes
-//				for(int i=0;i<num_of_ready_queues;i++)
-//				{
-//					LIST_FOREACH(env, &(env_ready_queues[i]))
-//					{
-//						coefficient = fix_div(fix_scale(load_avg,2), fix_add(fix_scale(load_avg,2), fix_int(1)));
-//						env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
-//
-//					}
-//				}
-//
-//			}
+				for(int i=0;i<num_of_ready_queues;i++)
+				{
+					num_of_ready_processes+= queue_size(&(env_ready_queues[i]));
+				}
+
+				//cprintf("ready processes %d\n", num_of_ready_processes);
+				//calculate load average
+				load_avg=fix_add(fix_scale(fix_unscale(load_avg,60),59),fix_unscale(fix_int(num_of_ready_processes),60));
+
+				//calculate recent cpu for every process
+				//ready processes
+				for(int i=0;i<num_of_ready_queues;i++)
+				{
+					LIST_FOREACH(env, &(env_ready_queues[i]))
+					{
+						coefficient = fix_div(fix_scale(load_avg,2), fix_add(fix_scale(load_avg,2), fix_int(1)));
+						env->recent_cpu=fix_add(fix_mul(coefficient,env->recent_cpu),fix_int(env->nice));
+
+					}
+				}
+
+			}
 
 			if(timer_ticks()%4==0) //4th tick
 			{
@@ -301,21 +302,23 @@ void clock_interrupt_handler()
 					LIST_FOREACH(env, &(env_ready_queues[i]))
 					{
 						priority=num_of_ready_queues-fix_trunc(fix_unscale(env->recent_cpu,4))-(env->nice*2);
-						if(priority>=num_of_ready_queues)
-							env->priority=num_of_ready_queues;
+						if(priority>=num_of_ready_queues-1)
+							env->priority=num_of_ready_queues-1;
 						else if(priority<=PRI_MIN)
 							env->priority=PRI_MIN;
 						else
 							env->priority=priority;
 
+						//cprintf("priority %d \n", env->priority);
 						//REORDERING
 						if(env->priority != i)
 						{
 							remove_from_queue(&(env_ready_queues[i]), env);
-							enqueue(&(env_ready_queues[priority]), env);
+							enqueue(&(env_ready_queues[env->priority]), env);
 						}
 					}
 				}
+
 			}
 
 
