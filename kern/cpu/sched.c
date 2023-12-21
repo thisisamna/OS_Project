@@ -172,8 +172,8 @@ void sched_init_BSD(uint8 numOfLevels, uint8 quantum)
 	quantums[0] = quantum;
 	kclock_set_quantum(quantums[0]);
 
-	ticksPerSecond= 1000/quantums[0]; //rounds UP
-	//load_avg = 0;
+	ticksPerSecond= 1000/quantums[0]; //rounds down
+	load_avg = fix_int(0);
 
 	for (int i=0;i<num_of_ready_queues;i++)
 	{
@@ -207,12 +207,11 @@ struct Env* fos_scheduler_BSD()
 	//Your code is here
 	//Comment the following line
 	//panic("Not implemented yet");
-	uint32 num_of_ready_processes = 0;
+	//uint32 num_of_ready_processes = 0;
 	struct Env * next_env = NULL;
 
 	if(curenv != NULL)
 	{
-		num_of_ready_processes++;
 		enqueue(&env_ready_queues[curenv->priority], curenv);
 	}
 
@@ -228,11 +227,16 @@ struct Env* fos_scheduler_BSD()
 	}
 
 
+	//count ready processes.. optimizable?
+	uint32 num_of_ready_processes = 0;
+	if(curenv!=NULL)
+		num_of_ready_processes++;
 
 	for(int i=0;i<num_of_ready_queues;i++)
 	{
 		num_of_ready_processes+= queue_size(&(env_ready_queues[i]));
 	}
+
 	load_avg=fix_add(fix_scale(fix_unscale(load_avg,60),59),fix_unscale(fix_int(num_of_ready_processes),60));
 	return NULL;
 }
@@ -261,6 +265,7 @@ void clock_interrupt_handler()
 			}
 
 			//
+			cprintf("%d", timer_ticks());
 			if(timer_ticks() % ticksPerSecond == 0)//second has passed
 			{
 				//count ready processes.. optimizable?
