@@ -562,7 +562,13 @@ void env_set_nice(struct Env* e, int nice_value)
 
 	if(e->env_status != ENV_NEW)
 	{
-		e->priority=(num_of_ready_queues-1)-fix_trunc(fix_unscale(e->recent_cpu,4))-(e->nice*2);
+		uint32 priority=(num_of_ready_queues-1)-fix_trunc(fix_unscale(e->recent_cpu,4))-(e->nice*2);
+		if(priority>=(num_of_ready_queues-1))
+			e->priority=num_of_ready_queues-1;
+		else if(priority<=PRI_MIN)
+			e->priority=PRI_MIN;
+		else
+			e->priority=priority;
 	}
 
 }
