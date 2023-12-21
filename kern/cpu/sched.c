@@ -252,6 +252,7 @@ void clock_interrupt_handler()
 	//each sec ==> recalculate load and recent_cpu for All processes
 	//4th tick ==> recalculate priority
 	//each tick ==> recalculate recent_cpu for RUNNING processes
+	if (scheduler_method == SCH_BSD)
 	{
 
 			fixed_point_t coefficient;
@@ -332,7 +333,7 @@ void clock_interrupt_handler()
 
 			}
 
-}
+	}
 
 
 	/********DON'T CHANGE THIS LINE***********/
