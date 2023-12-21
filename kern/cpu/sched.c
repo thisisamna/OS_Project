@@ -172,7 +172,7 @@ void sched_init_BSD(uint8 numOfLevels, uint8 quantum)
 	quantums[0] = quantum;
 	kclock_set_quantum(quantums[0]);
 
-	ticksPerSecond= 1000/quantums[0]; //rounds down
+	ticksPerSecond= 1000/quantums[0]; //rounds UP
 	//load_avg = 0;
 
 	for (int i=0;i<num_of_ready_queues;i++)
@@ -261,7 +261,7 @@ void clock_interrupt_handler()
 			}
 
 			//
-			if((timer_ticks()*quantums[0]) % 1 == 0)//second has passed
+			if(timer_ticks() % ticksPerSecond == 0)//second has passed
 			{
 				//count ready processes.. optimizable?
 				uint32 num_of_ready_processes = 0;
