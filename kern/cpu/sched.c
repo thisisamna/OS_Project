@@ -265,7 +265,6 @@ void clock_interrupt_handler()
 			}
 
 			//
-			cprintf("%d", timer_ticks());
 			if(timer_ticks() % ticksPerSecond == 0)//second has passed
 			{
 				//count ready processes.. optimizable?
