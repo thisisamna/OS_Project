@@ -196,9 +196,28 @@ int allocate_frame(struct FrameInfo **ptr_frame_info)
 				}
 			}
 			//ready env
-			LIST_FOREACH(env, &env_new_queue)
+			for(int i=0;i<num_of_ready_queues;i++)
 			{
+				LIST_FOREACH(env, &(env_ready_queues[i]))
+				{
+					victim_Remove = LIST_LAST(&(env->SecondList));
 
+					if(victim_Remove != NULL)
+					{
+						frame= get_frame_info(env->env_page_directory,victim_Remove->virtual_address, &ptr_table);
+
+						//check if modified => write it to disk
+						uint32 page_permissions = pt_get_page_permissions(env->env_page_directory,victim_Remove->virtual_address);
+						if(page_permissions & PERM_MODIFIED)
+						{
+						  //write it to disk(update)
+							pf_update_env_page(env, (uint32)victim_Remove->virtual_address, frame);
+						}
+						unmap_frame(env->env_page_directory,victim_Remove->virtual_address);
+						LIST_REMOVE(&(env->SecondList), victim_Remove);
+						kfree(victim_Remove);
+					}
+				}
 			}
 			//running env
 			if(curenv!=NULL)
