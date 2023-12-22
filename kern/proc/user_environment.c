@@ -474,8 +474,8 @@ void env_free(struct Env *e)
 			}
 			// [a.2] LRU lists themselves
 
-			LIST_INIT(e->ActiveList);
-			LIST_INIT(e->SecondList);
+			LIST_INIT(&(e->ActiveList));
+			LIST_INIT(&(e->SecondList));
 
 		}
 
@@ -490,7 +490,7 @@ void env_free(struct Env *e)
 				kfree(wse);
 			}
 			// [b.2] Working set itself
-			LIST_INIT(e->page_WS_list);
+			LIST_INIT(&(e->page_WS_list));
 
 		}
 
@@ -498,7 +498,7 @@ void env_free(struct Env *e)
 		int numOfTableEntries = PAGE_SIZE/sizeof(int32);
 		for(int i = 0; i < numOfTableEntries; i++)
 		{
-			kfree(e->env_page_directory[i]);
+			kfree(&(e->env_page_directory[i]));
 		}
 		// [4] Directory table
 
