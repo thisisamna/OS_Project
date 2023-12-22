@@ -452,9 +452,38 @@ void env_free(struct Env *e)
 		//panic("env_free() is not implemented yet...!!");
 
 		// [1] All pages in the page working set (or LRU lists)
+		struct WorkingSetElement *wse;
+
+		if (isPageReplacmentAlgorithmLRU(PG_REP_LRU_LISTS_APPROX))
+		{
+			LIST_FOREACH(wse, &(e->ActiveList))
+			{
+				unmap_frame(e->env_page_directory, wse->virtual_address);
+				LIST_REMOVE(&(e->ActiveList), wse);
+				kfree(wse);
+			}
+			LIST_FOREACH(wse, &(e->SecondList))
+			{
+				unmap_frame(e->env_page_directory, wse->virtual_address);
+				LIST_REMOVE(&(e->SecondList), wse);
+				kfree(wse);
+			}
+		}
+
+		else
+		{
+			LIST_FOREACH(wse, &(e->page_WS_list))
+			{
+				unmap_frame(e->env_page_directory, wse->virtual_address);
+				LIST_REMOVE(&(e->page_WS_list), wse);
+				kfree(wse);
+			}
+		}
 		// [2] Working set itself (or LRU lists)
 		// [3] All page tables in the entire user virtual memory
+
 		// [4] Directory table
+		kfree(e->env_page_directory);
 
 
 
