@@ -172,7 +172,10 @@ void sched_init_BSD(uint8 numOfLevels, uint8 quantum)
 	quantums[0] = quantum;
 	kclock_set_quantum(quantums[0]);
 
-	ticksPerSecond= 1000/quantums[0]; //rounds down
+	//int64 ticksPerSecondold= 1000/quantums[0]; //rounds down
+	ticksPerSecond= fix_round(fix_unscale(fix_int(1000),quantums[0])); //rounds down
+	//cprintf("\n\nOld:%d \t", ticksPerSecondold);
+	//cprintf("NEw:%d\n\n", ticksPerSecond);
 	load_avg = fix_int(0);
 
 	for (int i=0;i<num_of_ready_queues;i++)
