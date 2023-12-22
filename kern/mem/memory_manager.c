@@ -151,7 +151,7 @@ int allocate_frame(struct FrameInfo **ptr_frame_info)
 		//TODO: [PROJECT'23.MS3 - BONUS] Free RAM when it's FULL
 		//panic("ERROR: Kernel run out of memory... allocate_frame cannot find a free frame.\n");
 		int freed = 0;
-		//	1-	If any process has exited (those with status ENV_EXIT), then remove one or more of these exited processes from the main memory
+		//	1- If any process has exited (those with status ENV_EXIT), then remove one or more of these exited processes from the main memory
 		if(queue_size(&env_exit_queue)>0)
 		{
 			struct Env* env;
@@ -169,8 +169,58 @@ int allocate_frame(struct FrameInfo **ptr_frame_info)
 
 		if(!freed)
 		{
-			//	2-	otherwise, free at least 1 frame from the user working set by applying the FIFO algorithm
+			//	2- otherwise, free at least 1 frame from the user working set by applying the FIFO algorithm
+			struct Env* env;
+			struct WorkingSetElement *victim_Remove;
+			uint32 *ptr_table;
+			struct FrameInfo *frame;
+			//new envs
+			LIST_FOREACH(env, &env_new_queue)
+			{
+				victim_Remove = LIST_LAST(&(env->SecondList));
 
+				if(victim_Remove != NULL)
+				{
+					frame= get_frame_info(env->env_page_directory,victim_Remove->virtual_address, &ptr_table);
+
+					//check if modified => write it to disk
+					uint32 page_permissions = pt_get_page_permissions(env->env_page_directory,victim_Remove->virtual_address);
+					if(page_permissions & PERM_MODIFIED)
+					{
+					  //write it to disk(update)
+						pf_update_env_page(env, (uint32)victim_Remove->virtual_address, frame);
+					}
+					unmap_frame(env->env_page_directory,victim_Remove->virtual_address);
+					LIST_REMOVE(&(env->SecondList), victim_Remove);
+					kfree(victim_Remove);
+				}
+			}
+			//ready env
+			LIST_FOREACH(env, &env_new_queue)
+			{
+
+			}
+			//running env
+			if(curenv!=NULL)
+			{
+				victim_Remove = LIST_LAST(&(curenv->SecondList));
+
+				if(victim_Remove != NULL)
+				{
+					frame= get_frame_info(curenv->env_page_directory,victim_Remove->virtual_address, &ptr_table);
+
+					//check if modified => write it to disk
+					uint32 page_permissions = pt_get_page_permissions(curenv->env_page_directory,victim_Remove->virtual_address);
+					if(page_permissions & PERM_MODIFIED)
+					{
+					  //write it to disk(update)
+						pf_update_env_page(curenv, (uint32)victim_Remove->virtual_address, frame);
+					}
+					unmap_frame(curenv->env_page_directory,victim_Remove->virtual_address);
+					LIST_REMOVE(&(curenv->SecondList), victim_Remove);
+					kfree(victim_Remove);
+				}
+			}
 
 		}
 	}
