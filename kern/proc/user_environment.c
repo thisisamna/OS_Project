@@ -443,14 +443,18 @@ void env_run(struct Env *e)
 void env_free(struct Env *e)
 {
 	/*REMOVE THIS LINE BEFORE START CODING*/
-	return;
+	//return;
 	/**************************************/
 
 	//TODO: [PROJECT'23.MS3 - BONUS] EXIT ENV: env_free
 	// your code is here, remove the panic and write your code
 	{
-		panic("env_free() is not implemented yet...!!");
+		//panic("env_free() is not implemented yet...!!");
 
+		// [1] All pages in the page working set (or LRU lists)
+		// [2] Working set itself (or LRU lists)
+		// [3] All page tables in the entire user virtual memory
+		// [4] Directory table
 
 
 
