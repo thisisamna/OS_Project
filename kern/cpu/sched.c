@@ -230,11 +230,8 @@ struct Env* fos_scheduler_BSD()
 	}
 
 
-	//count ready processes.. optimizable?
-	uint32 num_of_ready_processes = 0;
-	if(curenv!=NULL)
-		num_of_ready_processes++;
 
+	uint32 num_of_ready_processes = 0;
 	for(int i=0;i<num_of_ready_queues;i++)
 	{
 		num_of_ready_processes+= queue_size(&(env_ready_queues[i]));
