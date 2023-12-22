@@ -443,14 +443,66 @@ void env_run(struct Env *e)
 void env_free(struct Env *e)
 {
 	/*REMOVE THIS LINE BEFORE START CODING*/
-	return;
+	//return;
 	/**************************************/
 
 	//TODO: [PROJECT'23.MS3 - BONUS] EXIT ENV: env_free
 	// your code is here, remove the panic and write your code
 	{
-		panic("env_free() is not implemented yet...!!");
+		//panic("env_free() is not implemented yet...!!");
 
+		// [1] All pages in the page working set (or LRU lists)
+		// [1.2] Working set itself (or LRU lists)
+
+		struct WorkingSetElement *wse;
+
+		if (isPageReplacmentAlgorithmLRU(PG_REP_LRU_LISTS_APPROX))
+		{
+			// [a.1] All pages in the LRU lists)
+
+			LIST_FOREACH(wse, &(e->ActiveList))
+			{
+				unmap_frame(e->env_page_directory, wse->virtual_address);
+				LIST_REMOVE(&(e->ActiveList), wse);
+				kfree(wse);
+			}
+			LIST_FOREACH(wse, &(e->SecondList))
+			{
+				unmap_frame(e->env_page_directory, wse->virtual_address);
+				LIST_REMOVE(&(e->SecondList), wse);
+				kfree(wse);
+			}
+			// [a.2] LRU lists themselves
+
+			LIST_INIT(&(e->ActiveList));
+			LIST_INIT(&(e->SecondList));
+
+		}
+
+		else
+		{
+			// [b.1] All pages in the page working set
+
+			LIST_FOREACH(wse, &(e->page_WS_list))
+			{
+				unmap_frame(e->env_page_directory, wse->virtual_address);
+				LIST_REMOVE(&(e->page_WS_list), wse);
+				kfree(wse);
+			}
+			// [b.2] Working set itself
+			LIST_INIT(&(e->page_WS_list));
+
+		}
+
+		// [3] All page tables in the entire user virtual memory
+		int numOfTableEntries = PAGE_SIZE/sizeof(int32);
+		for(int i = 0; i < numOfTableEntries; i++)
+		{
+			kfree(&(e->env_page_directory[i]));
+		}
+		// [4] Directory table
+
+		kfree(e->env_page_directory);
 
 
 
@@ -469,6 +521,7 @@ void env_free(struct Env *e)
 	/*========================*/
 
 }
+
 
 
 //============================
