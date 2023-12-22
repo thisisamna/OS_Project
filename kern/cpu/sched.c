@@ -271,7 +271,7 @@ void clock_interrupt_handler()
 			}
 
 			//
-			if(timer_ticks() % ticksPerSecond == 0)//second has passed
+			if(timer_ticks()+1 % ticksPerSecond == 0)//second has passed
 			{
 				//count ready processes.. optimizable?
 				uint32 num_of_ready_processes = 0;
@@ -301,7 +301,7 @@ void clock_interrupt_handler()
 					curenv->recent_cpu=fix_add(fix_mul(coefficient,curenv->recent_cpu),fix_int(curenv->nice));
 			}
 
-			if(timer_ticks()%4==0) //4th tick
+			if(timer_ticks() +1 %4==0) //4th tick
 			{
 				uint32 priority;
 				for(int i=0;i<num_of_ready_queues;i++)
