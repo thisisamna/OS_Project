@@ -251,7 +251,9 @@ struct Env* fos_scheduler_BSD()
 void clock_interrupt_handler()
 {
 	//TODO: [PROJECT'23.MS3 - #5] [2] BSD SCHEDULER - Your code is here
+	cprintf("Before %d \n", ticks);
 
+	sched_print_all();
 	//each sec ==> recalculate load and recent_cpu for All processes
 	//4th tick ==> recalculate priority
 	//each tick ==> recalculate recent_cpu for RUNNING processes
@@ -337,7 +339,8 @@ void clock_interrupt_handler()
 			}
 
 	}
-
+	cprintf("After %d \n", ticks);
+	sched_print_all();
 
 	/********DON'T CHANGE THIS LINE***********/
 	ticks++ ;
