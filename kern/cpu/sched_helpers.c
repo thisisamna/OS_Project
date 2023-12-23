@@ -444,8 +444,10 @@ void sched_run_all()
 {
 	struct Env* ptr_env=NULL;
 
-	LIST_FOREACH(ptr_env, &env_new_queue)
+	int count = queue_size(&env_new_queue);
+	for(int i=0; i< count; i++)
 	{
+		ptr_env=dequeue(&env_new_queue);
 		sched_remove_new(ptr_env);
 		sched_insert_ready0(ptr_env);
 	}
