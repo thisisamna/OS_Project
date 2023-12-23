@@ -83,7 +83,7 @@ fos_scheduler(void)
 	chk2(next_env) ;
 	curenv = old_curenv;
 
-	//sched_print_all();
+	sched_print_all();
 
 	if(next_env != NULL)
 	{

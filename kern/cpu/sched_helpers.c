@@ -445,11 +445,15 @@ void sched_run_all()
 	struct Env* ptr_env=NULL;
 
 	int count = queue_size(&env_new_queue);
+	//cprintf("Count: %d\n", count);
 	for(int i=0; i< count; i++)
 	{
+		//cprintf("Iter: %d\n", i);
+		//cprintf("Queue: %d\n", env_new_queue.size);
+
 		ptr_env=dequeue(&env_new_queue);
-		sched_remove_new(ptr_env);
 		sched_insert_ready0(ptr_env);
+		//cprintf("Env %d In ready", ptr_env->env_id);
 	}
 	/*2015*///if scheduler not run yet, then invoke it!
 	if (scheduler_status == SCH_STOPPED)
