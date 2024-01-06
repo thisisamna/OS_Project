@@ -10,16 +10,7 @@
   <h3 align="center">FOS</h3>
 
   <p align="center">
-FOS, our mini operating system!
-       <br />
-    <a href="https://github.com/othneildrew/Best-README-Template"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/othneildrew/Best-README-Template">View Demo</a>
-    ·
-    <a href="https://github.com/othneildrew/Best-README-Template/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/othneildrew/Best-README-Template/issues">Request Feature</a>
+A mighty mini-operating system!
   </p>
 </div>
 
@@ -36,19 +27,14 @@ FOS, our mini operating system!
       </ul>
     </li>
     <li>
-      <a href="#Modules">Modules</a>
+      <a href="#modules">Modules</a>
       <ul>
         <li><a href="#system-calls">System calls</a></li>
-        <li><a href="#memory-allocation"> Memory allocation</a></li>        
+        <li><a href="#memory-manager"> Memory manager</a></li>        
         <li><a href="#fault-handler">Fault Handler</a></li>
-        <li><a href="#cpu-scheduling"> CPU Scheduling</a></li>
+        <li><a href="#cpu-scheduler"> CPU Scheduler</a></li>
    </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
@@ -58,9 +44,10 @@ FOS, our mini operating system!
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![FOS Screen Shot][fos-screenshot]](https://example.com)
+FOS is a basic, command-line based operating system.
 
-This is OS'23 course project at FCIS, Ain Shams University, better known as FOS.
+This was a project for OS'23 course at FCIS, Ain Shams University.
+
 * Supervisor and course lecturer: Dr. Ahmed Salah
 * Mentor TA: Dr Rezq Mohammed
 
@@ -86,7 +73,7 @@ This is OS'23 course project at FCIS, Ain Shams University, better known as FOS.
 - System call implementation
 - Linking user side and kernel side functions
 
-### Memory Allocation
+### Memory Manager
 
 Managing user and kernel memory using two schemes
 - Dynamic (block) allocator
